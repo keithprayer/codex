@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "events": [],
+  "feedback": [],
+  "metrics": [],
+  "note": "人工核查记录。初始为空，上一轮聊天简报不作为自动验证过的实时数据。格式见 docs/DATA.md。"
+}

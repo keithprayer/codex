@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "settings": {
+    "tradeSizeUsd": 1000,
+    "staleMinutes": 30,
+    "priceChangePct": 20,
+    "volumeMultiple": 3,
+    "depthDropPct": 50,
+    "feedbackSamples": 5,
+    "unlockPct": 5,
+    "depegPct": 2,
+    "historyToleranceSeconds": 900,
+    "crossAssetSkewSeconds": 60
+  },
+  "projects": [
+    {
+      "id": "rgb",
+      "name": "RGB Protocol",
+      "ecosystems": ["RGB"],
+      "network": "Bitcoin",
+      "protocol": "RGB client-side validation",
+      "officialUrl": "https://rgb.info/",
+      "identityStatus": "protocol_only",
+      "repos": [],
+      "feeds": ["https://rgb.info/feed/"],
+      "assets": [],
+      "metrics": ["客户端与钱包版本", "公开发行记录", "验证与恢复能力"],
+      "visibility": "客户端验证的私有状态不可全网枚举；公开索引不等于全网。"
+    },
+    {
+      "id": "bitlight",
+      "name": "Bitlight Labs",
+      "ecosystems": ["RGB", "Lightning"],
+      "network": "Bitcoin products / BNB Smart Chain token",
+      "protocol": "RGB / Lightning",
+      "officialUrl": "https://bitlightlabs.com/",
+      "identityStatus": "review_required",
+      "repos": [],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "light-bsc",
+          "symbol": "LIGHT",
+          "network": "BNB Smart Chain",
+          "standard": "BEP-20",
+          "uniqueId": "0x477C2c0459004E3354Ba427FA285D7C053203c0E",
+          "identityStatus": "reference_only",
+          "identitySource": "https://www.bitget.com/news/detail/12560604990293",
+          "coinGeckoId": "bitlight",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": ["RGB 钱包与通道恢复", "LSP 可用性"],
+      "visibility": "项目的 BTC 生态标签与代币发行网络分别记录；启用行情前重新确认合约。"
+    },
+    {
+      "id": "lightning-labs",
+      "name": "Lightning Labs",
+      "ecosystems": ["Taproot Assets", "Lightning"],
+      "network": "Bitcoin",
+      "protocol": "Taproot Assets / Lightning Network",
+      "officialUrl": "https://lightning.engineering/",
+      "identityStatus": "protocol_only",
+      "repos": ["lightninglabs/taproot-assets", "lightningnetwork/lnd"],
+      "feeds": [],
+      "assets": [],
+      "metrics": [
+        "tapd / LND 版本",
+        "证明格式激活",
+        "公开节点与通道",
+        "Universe 发行记录"
+      ],
+      "visibility": "私有通道、支付成功率和私有 Universe 不属于公开全网数据。"
+    },
+    {
+      "id": "unisat",
+      "name": "UniSat · ORDI 观察组",
+      "ecosystems": ["BRC20"],
+      "network": "Bitcoin mainnet",
+      "protocol": "BRC-20",
+      "officialUrl": "https://unisat.io/",
+      "identityStatus": "review_required",
+      "repos": ["unisat-wallet/extension"],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "ordi-btc",
+          "symbol": "ORDI",
+          "network": "Bitcoin mainnet",
+          "standard": "BRC-20",
+          "uniqueId": "b61b0172d95e266c18aea0c624db987e971a5d6d4ebc2aaed85da4642d635735i0",
+          "identityStatus": "reference_only",
+          "identitySource": "https://ordiscan.com/inscription/348020",
+          "coinGeckoId": "ordi",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": ["钱包与索引器版本", "部署 / 铸造 / 转账", "索引器一致性"],
+      "visibility": "ORDI 是独立观察资产，不是 UniSat 项目代币；聚合报价可能包含跨链表示。"
+    },
+    {
+      "id": "crc-garden",
+      "name": "CRC Garden",
+      "ecosystems": ["CRC20"],
+      "network": "Bitcoin L1（项目方声明，待核实）",
+      "protocol": "CRC-20（协议全名待核实）",
+      "officialUrl": "https://crc.garden/",
+      "identityStatus": "unverified",
+      "repos": [],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "leaf-unverified",
+          "symbol": "LEAF",
+          "network": "待核实",
+          "standard": "CRC-20 待核实",
+          "uniqueId": null,
+          "identityStatus": "unverified",
+          "marketEnabled": false
+        },
+        {
+          "id": "axbt-unverified",
+          "symbol": "AXBT",
+          "network": "待核实",
+          "standard": "CRC-20 待核实",
+          "uniqueId": null,
+          "identityStatus": "unverified",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": ["协议全名与创世资产核验", "抵押 / 负债 / 赎回"],
+      "visibility": "CRC20 名称有歧义。全名、网络、唯一资产标识全部通过后才能启用报价；不假设 AXBT 锚定美元。"
+    },
+    {
+      "id": "dog",
+      "name": "DOG · Runes",
+      "ecosystems": ["Runes"],
+      "network": "Bitcoin mainnet",
+      "protocol": "Runes",
+      "officialUrl": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
+      "identityStatus": "review_required",
+      "repos": [],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "dog-rune",
+          "symbol": "DOG",
+          "network": "Bitcoin mainnet",
+          "standard": "Runes",
+          "uniqueId": "840000:3",
+          "identityStatus": "reference_only",
+          "identitySource": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
+          "coinGeckoId": "dog-go-to-the-moon-rune",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": ["Rune ID 与发行属性", "活跃转账与持有人", "市场流动性"],
+      "visibility": "当前入口是区块浏览器，不视为发行方官方公告源。"
+    },
+    {
+      "id": "atomicals",
+      "name": "Atomicals",
+      "ecosystems": ["ARC20"],
+      "network": "Bitcoin mainnet",
+      "protocol": "Atomicals / ARC-20",
+      "officialUrl": "https://github.com/atomicals/atomicals-electrumx",
+      "identityStatus": "protocol_only",
+      "repos": ["atomicals/atomicals-electrumx"],
+      "feeds": [],
+      "assets": [],
+      "metrics": ["节点与索引器版本", "Atomical ID", "铸造与转账"],
+      "visibility": "尚未选择具体 ARC-20 资产，避免误用 Cosmos ATOM 行情。"
+    },
+    {
+      "id": "cat",
+      "name": "CAT Protocol",
+      "ecosystems": ["CAT20"],
+      "network": "Fractal Bitcoin",
+      "protocol": "Covenant Attested Token / CAT20",
+      "officialUrl": "https://catprotocol.org/",
+      "identityStatus": "protocol_only",
+      "repos": ["CATProtocol/cat-token-box"],
+      "feeds": [],
+      "assets": [],
+      "metrics": ["OP_CAT 部署网络", "合约与 SDK 版本", "发行与索引器"],
+      "visibility": "部署网络与具体 token ID 分别核验，不把 Fractal 自动归为 Bitcoin 主网。"
+    },
+    {
+      "id": "stacks",
+      "name": "Stacks",
+      "ecosystems": ["Bitcoin L2"],
+      "network": "Stacks mainnet",
+      "protocol": "Stacks / Proof of Transfer",
+      "officialUrl": "https://www.stacks.co/",
+      "identityStatus": "verified",
+      "repos": ["stacks-network/stacks-core"],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "stx-native",
+          "symbol": "STX",
+          "network": "Stacks mainnet",
+          "standard": "native",
+          "uniqueId": "stacks-mainnet:native:STX",
+          "identityStatus": "verified",
+          "identitySource": "https://docs.stacks.co/",
+          "coinGeckoId": "blockstack",
+          "marketEnabled": true
+        }
+      ],
+      "metrics": ["协议升级与 PoX", "sBTC 供应及赎回", "活跃地址与合约使用"],
+      "visibility": "官方文章的计划与链上实际执行分开记录；sBTC / stBTC 须另外添加资产。"
+    }
+  ]
+}
