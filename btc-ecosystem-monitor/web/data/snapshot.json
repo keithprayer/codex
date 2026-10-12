@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "mode": "uncollected",
-  "generatedAt": "2026-10-12T09:06:00Z",
+  "mode": "collected",
+  "generatedAt": "2026-10-12T16:03:10Z",
   "window": {
-    "cutoff": "2026-10-12T09:06:00Z",
-    "start24h": "2026-10-11T09:06:00Z",
-    "start7d": "2026-10-05T09:06:00Z",
-    "end7d": "2026-10-19T09:06:00Z"
+    "cutoff": "2026-10-12T16:02:56Z",
+    "start24h": "2026-10-11T16:02:56Z",
+    "start7d": "2026-10-05T16:02:56Z",
+    "end7d": "2026-10-19T16:02:56Z"
   },
   "settings": {
     "tradeSizeUsd": 1000,
@@ -283,9 +283,2049 @@
       "visibility": "官方文章的计划与链上实际执行分开记录；sBTC / stBTC 须另外添加资产。"
     }
   ],
-  "events": [],
-  "feedbackGroups": [],
-  "markets": [],
+  "events": [
+    {
+      "id": "rss-fdc11c3f87d9002a651f",
+      "projectId": "rgb",
+      "type": "announcement",
+      "title": "How Privacy Is Preserved in RGB Protocol on Bitcoin",
+      "summary": "请打开官方原文核查具体声明、计划与生效时间。",
+      "url": "https://rgb.info/privacy-in-rgb-protocol-on-bitcoin/",
+      "publishedAt": "2026-10-07T07:00:00Z",
+      "effectiveAt": null,
+      "status": "published",
+      "evidence": "statement",
+      "sources": [
+        "https://rgb.info/privacy-in-rgb-protocol-on-bitcoin/"
+      ]
+    },
+    {
+      "id": "rss-511a709c7e203e982939",
+      "projectId": "rgb",
+      "type": "announcement",
+      "title": "Stablecoins, Privacy, and Lightning on RGB Protocol",
+      "summary": "请打开官方原文核查具体声明、计划与生效时间。",
+      "url": "https://rgb.info/stablecoin-privacy-bitcoin-rgb-origin-seoul/",
+      "publishedAt": "2026-10-06T15:01:55Z",
+      "effectiveAt": null,
+      "status": "published",
+      "evidence": "statement",
+      "sources": [
+        "https://rgb.info/stablecoin-privacy-bitcoin-rgb-origin-seoul/"
+      ]
+    }
+  ],
+  "feedbackGroups": [
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2347",
+      "title": "[bug]: memory spike on litd + tapd start up",
+      "reports": [
+        {
+          "id": "gh-issue-5813539968",
+          "projectId": "lightning-labs",
+          "title": "[bug]: memory spike on litd + tapd start up",
+          "summary": "### Background\n\nWe run litd in integrated mode (lnd + tapd in one process) on Kubernetes. One node uses much more memory right after startup than at steady state. This node has the most Taproot Asset activity in our fleet.\n\nOther nodes start well under 1.2GB with the same version, config and graph size. We could not yet attribute the memory to a specific subsystem.\n\n### Your environment\n\n```sh\ntapcli getinfo                       # tapd 0.8.5-alpha, lnd 0.21.4-beta, mainnet\nuname -mrsv                          # Linux, x86\nbitcoind --version || btcd --version # n/a: chain backend is neutrino\n```\n\n* litd `v0.17.6` (commit `b779ae7aec80b5462bf85cf20e2a40fb816f296e`), integrated mode, `taprootAssetsMode=integrated`\n* lnd `0.21.4-beta`, tapd `0.8.5-alpha`\n* mainnet, neutrino chain backend\n* Remote Postgres for the lnd, tapd and lit DBs\n* Kubernetes container: memory request 512Mi, limit 4Gi (was 2Gi when the OOM loop happened)\n\nNode profile:\n\n* 34 channels. 9 are Taproot Asset channels, with commitment heights up to ~13k.\n* 27 V2 Taproot Asset addresses. Each has a mailbox subscription to `universe.lightning.finance:10029`.\n* In-memory graph at startup: `num_nodes=41744, num_channels=449358` (same as our other nodes).\n\n### Steps to reproduce\n\nWe do not have a minimal reproduction. We see the spike on every cold start of this one node:\n\n1. Start litd (integrated mode) on the node described above.\n2. Unlock the wallet.\n3. Watch the process memory for ~5 minutes.\n\nMemory during one start (2026-10-10, 4Gi limit):\n\n| Time (UTC) | RSS | Log milestone |\n| -- | -- | -- |\n| 09:20 | ~0.2GB | Process start, waiting for wallet unlock |\n| 09:22:16 | ~0.23GB | Wallet unlocked; tapd starts (`TADB` migrations, `GRDN: Gardener ... active`) |\n| 09:22:17 | | `UNIV: Attempting to sync universe ... sync_type=full` → `Obtained 0 roots` |\n| 09:22:20 | | `GRDN: Checking 46 wallet transactions for inbound assets` |\n| 09:22:21–22 | | 27× `GRDN: Subscribing to mailbox updates ... startBlock=965192`, 27× `AMBX: Successfully connected to mailbox server` |\n| 09:23 | ~2.0GB | Channel links come up, peers reconnect |\n| 09:24 | ~2.8GB | |\n| 09:26 | **~3.2GB (peak)** | |\n| 09:28 | ~1.1GB | |\n| 09:30+ | ~0.9GB | Steady state |\n\nWith the 2Gi limit, every start followed the same curve: ~140MB until unlock, then past 2Gi within ~3 minutes, then OOMKill.\n\nWhat we checked:\n\n* **Mailbox replay:** In `tapgarden/custodian.go`, `importAddrToWallet` does not mark V2 addresses as managed. So tapd re-subscribes all V2 addresses to the auth mailbox on every start, from `LastEventHeightByVersion(V2)`. But no `Received mailbox message ... already fully processed, skipping` lines appear during startup. So a large replay does not seem to be the cause.\n* **Universe sync:** startup sync obtains 0 roots.\n* **Graph / gossip:** all our nodes load the same graph, and the other nodes start under 1.2GB.\n* **Postgres:** no startup errors.\n\nMost of the growth happens while the channel links (including the 9 ass",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2347",
+          "problemKey": "lightninglabs/taproot-assets#2347",
+          "platform": "GitHub",
+          "author": "bufo24",
+          "isBot": false,
+          "publishedAt": "2026-10-12T12:14:56Z",
+          "updatedAt": "2026-10-12T14:55:33Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 1,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2344",
+      "title": "[bug]: Supply commitment spends the transfer outpoint after a transfer proof retargets the genesis anchor",
+      "reports": [
+        {
+          "id": "gh-issue-5810384196",
+          "projectId": "lightning-labs",
+          "title": "[bug]: Supply commitment spends the transfer outpoint after a transfer proof retargets the genesis anchor",
+          "summary": "### Background\n\n`UpdateSupplyCommit` can build a commitment whose input 0 spends a transfer output instead of the mint supply pre-commit. The pre-commit output index is still the mint's index, so the commitment spends `<transfer txid>:<pre-commit index>` and is signed with the mint pre-commit key. The node rejects that transaction. The commitment never confirms, so later supply updates, including burns, wait on a commitment that cannot finalize. Confirming the first supply commitment before any transfer proof is upserted spends `<mint txid>:<pre-commit index>` and does not hit this. That is what `testSupplyCommitMintBurn` does.\n\n### Your environment\n\n- v0.8.0. The same `upsertAssetGen` path calls `AnchorGenesisPoint` on every proof, including a transfer proof.\n- v0.8.5 (`bb3f1c6b552109dcd3f24c2fb3939ec051bfd9e6`, tag `v0.8.5`). Reproduced with the new `supply commit send before commit` itest on a tree that has that test and no write guard.\n- `main` at `9db270f988fc359233fe09f15ed2d041aea3c1f0`. `upsertAssetGen` still calls `AnchorGenesisPoint` unconditionally (`tapdb/universe.go:643`). `LatestMigrationVersion` is 73.\n\nlightninglabs/taproot-assets#2331 does not fix this. Its diff does not change `tapdb/universe.go`, `AnchorGenesisPoint`, or `FetchUnspentMintSupplyPreCommits`. On v0.8.5, a tree with #2331's cherry-picks and the v0.8.5 adaptations, and without the write guard (`9f72c9e5`), fails `supply_commit_send_before_commit` the same way stock v0.8.5 does.\n\nReproduced in the itest harness (btcd backend, lnd) on `regtest`.\n\n### Steps to reproduce\n\n1. Mint a grouped asset with supply commitments enabled, and confirm the mint.\n2. Send some of the asset, and let the transfer proof be upserted on the issuer (proof delivery back to the issuer, or a universe sync that inserts the transfer leaf).\n3. Call the first `UpdateSupplyCommit` for that group key.\n4. The commitment transaction's input 0 spends the send transaction at the pre-commit output index. The mint pre-commit output is still unspent.\n5. The commitment is rejected and never appears in the mempool, so it never confirms.\n\n#### What the rejection looks like\n\nv0.8.5 itest, stock tree plus only the new test (`0ad85408`), no write guard. The send succeeds. The harness then finds no commitment in the mempool:\n\n```\ntest_harness.go:179: Publishing the first supply commitment after the send\nutils.go:204: unable to find txns in mempool: wanted 1, found 0 txs in mempool: []\n--- FAIL: TestTaprootAssetsDaemon/tranche00/104-of-117/supply_commit_send_before_commit (93.27s)\n```\n\nbtcd (`output_btcd_chainbackend.log`). Commitment input 0 references the transfer at output 1:\n\n```\nRejected transaction cfb3002fe51827cc884233ec5209fa705203d6094bfc7933f2e9cc048b6111f6: failed to validate input cfb3002fe51827cc884233ec5209fa705203d6094bfc7933f2e9cc048b6111f6:0 which references output b63dde18b2b7a8d0d0dc729dc23d44426c6428b1d8b5dcbee958c55385a56c3a:1\n```\n\nlnd:\n\n```\nTransaction cfb3002fe51827cc884233ec5209fa705203d60",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2344",
+          "problemKey": "lightninglabs/taproot-assets#2344",
+          "platform": "GitHub",
+          "author": "SadiqJaf",
+          "isBot": false,
+          "publishedAt": "2026-10-12T08:03:01Z",
+          "updatedAt": "2026-10-12T08:03:01Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 1,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2302",
+      "title": "[bug]: AddAssetBuyOrder/AddAssetSellOrder return another concurrent order's accepted quote",
+      "reports": [
+        {
+          "id": "gh-issue-5424871992",
+          "projectId": "lightning-labs",
+          "title": "[bug]: AddAssetBuyOrder/AddAssetSellOrder return another concurrent order's accepted quote",
+          "summary": "### Background\n\n`AddAssetBuyOrder` (and `AddAssetSellOrder`) resolve their pending RPC call by waiting for the first accepted-quote event that matches the order's **peer and asset specifier only**. The quote request ID that `UpsertAssetBuyOrder` returns is used for the reject branches, but not for the accept branch. Because every accepted quote is broadcast to all event subscribers, two concurrent `AddAssetBuyOrder` calls for the same peer and asset receive each other's quotes, and both callers can be handed the same quote.\n\nWe hit this with the Loop server's RFQ client: it requests a small quote (prepay) and a large quote (main amount) per purchase, and several purchases can quote against the same edge peer at the same time. Callers regularly got a quote with `asset_max_amount = 2` back for an order that requested `asset_max_amount = asset_min_amount = 11`, and vice versa. Our client rejects the mismatched quote and retries, which requests yet more quotes, so the effect compounds. Within a few minutes the requesting node had ~2,800 accepted quotes outstanding for a single peer.\n\nRelevant code (`v0.8.3`):\n\n- accept branch matches on `MatchesOrder` rather than the request ID: https://github.com/lightninglabs/taproot-assets/blob/v0.8.3/rpcserver/rpcserver.go#L9157 (buy) and https://github.com/lightninglabs/taproot-assets/blob/v0.8.3/rpcserver/rpcserver.go#L9424 (sell)\n- reject branches do compare the ID: https://github.com/lightninglabs/taproot-assets/blob/v0.8.3/rpcserver/rpcserver.go#L9139\n- `MatchesOrder` compares asset specifier and peer only: https://github.com/lightninglabs/taproot-assets/blob/v0.8.3/rfq/manager.go#L1495\n\nUnchanged on `main` at 789960c8: https://github.com/lightninglabs/taproot-assets/blob/789960c8/rpcserver/rpcserver.go#L9446 and https://github.com/lightninglabs/taproot-assets/blob/789960c8/rpcserver/rpcserver.go#L9713.\n\n### Your environment\n\n```sh\ntapd 0.8.3-alpha commit=v0.8.3 (litd 0.17.4-alpha, integrated mode), lnd 0.21.3-beta, regtest\nDarwin 25.6.0 arm64\nBitcoin Core v29.0.0\n```\n\n### Steps to reproduce\n\n1. Two nodes A and B with an asset channel; B holds the asset.\n2. From A, issue two `AddAssetBuyOrder` calls concurrently against peer B for the same asset, e.g. `asset_max_amount = asset_min_amount = 2` and `asset_max_amount = asset_min_amount = 11`, both `EXECUTION_POLICY_FOK`, `timeout_seconds = 10`.\n3. Compare each response's `accepted_quote.asset_max_amount` with the amount that call requested. Repeating the pair a few times is enough; running the pair once per second for a minute makes it deterministic.\n\nB's log shows one `BuyRequest`/`BuyAccept` pair per order with the correct amounts, so the negotiation itself is fine. The mix-up happens when the RPC handler picks the accept event to return.\n\n### Expected behavior\n\nEach `AddAssetBuyOrder` / `AddAssetSellOrder` call returns the accepted quote whose ID equals the request ID returned by `UpsertAssetBuyOrder` / `UpsertAssetSellOrder`, the same way the reject branche",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2302",
+          "problemKey": "lightninglabs/taproot-assets#2302",
+          "platform": "GitHub",
+          "author": "hieblmi",
+          "isBot": false,
+          "publishedAt": "2026-09-11T13:28:50Z",
+          "updatedAt": "2026-10-09T12:47:58Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2214",
+      "title": "rpcserver: VerifyProofResponse.DecodedProof omits predecessor IDs that DecodeProof can expose",
+      "reports": [
+        {
+          "id": "gh-issue-4875161713",
+          "projectId": "lightning-labs",
+          "title": "rpcserver: VerifyProofResponse.DecodedProof omits predecessor IDs that DecodeProof can expose",
+          "summary": "## Problem\n\n`VerifyProof` returns a `DecodedProof` whose `asset.prev_witnesses` (and therefore the predecessor `PrevInputAsset` entries — `anchor_point`, `asset_id`, `script_key`) are always empty, whereas `DecodeProof` can populate them via `with_prev_witnesses`. For a lightweight/custom-anchor integration that verifies a proof file it received (e.g. SwapDK receiving assets over a custom anchor tx), `VerifyProof` is the natural single call: it both validates the proof chain and hands back a decoded summary. But that summary cannot tell the caller which asset(s) were spent to produce the proven asset — the predecessor inventory (input anchor outpoints + asset IDs + script keys). To obtain that, a caller must make a second, redundant `DecodeProof` call with `with_prev_witnesses=true`, re-decoding and re-parsing the same proof file. The asymmetry is undocumented, so integrations can reasonably assume `VerifyProof`'s `DecodedProof` is complete and silently get zero predecessors.\n\nNote this is distinct from `num_additional_inputs`, which `VerifyProof` *does* populate (it counts nested full input proofs) — that field gives a count but never the identifying `PrevInputAsset` fields needed to reconstruct the input set.\n\n## Current behaviour\n\n- `VerifyProof` decodes the file, verifies it, takes the last proof, and marshals it with prev witnesses (and meta reveal) hard-disabled:\n  - `rpcserver/rpcserver.go:2184` — `decodedProof, err := r.marshalProof(ctx, p, false, false)` (the two `false`s are `withPrevWitnesses` and `withMetaReveal`).\n  - The response is assembled at `rpcserver/rpcserver.go:2192`; there is no field on the request (`taprpc.ProofFile`, `taprpc/taprootassets.proto:1439`) to opt into witnesses.\n- `DecodeProof`, by contrast, threads the caller's flag through:\n  - `rpcserver/rpcserver.go:2213` and `rpcserver/rpcserver.go:2248` — `r.marshalProof(ctx, p, req.WithPrevWitnesses, req.WithMetaReveal)`.\n  - Request flag defined at `taprpc/taprootassets.proto:1534` (`bool with_prev_witnesses = 3`).\n- The predecessor IDs live behind the `withWitness` gate in the shared asset marshaler:\n  - `rpcutils/marshal.go:741-775` — only when `withWitness` is true does it iterate `a.PrevWitnesses`, build a `taprpc.PrevInputAsset` (`AnchorPoint`, `AssetId`, `ScriptKey` at `rpcutils/marshal.go:746-750`), and append to `rpcAsset.PrevWitnesses`. With `withWitness=false`, `PrevWitnesses` is left nil.\n- `marshalProof` itself always sets `num_additional_inputs` regardless of the witness flag:\n  - `rpcserver/rpcserver.go:2437` — `NumAdditionalInputs: uint32(len(p.AdditionalInputs))`.\n- Proto shapes for reference: `DecodedProof` (`taprpc/taprootassets.proto:1449`), `VerifyProofResponse` (`taprpc/taprootassets.proto:1513`), `PrevWitness` (`taprpc/taprootassets.proto:661`), `PrevInputAsset` (`taprpc/taprootassets.proto:1692`).\n\nNet effect: `VerifyProofResponse.decoded_proof.asset.prev_witnesses` is always empty; the only way to see predecessor IDs is a separate `DecodeProof`",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2214",
+          "problemKey": "lightninglabs/taproot-assets#2214",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:34:12Z",
+          "updatedAt": "2026-10-09T09:41:56Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2213",
+      "title": "taprpc: granular macaroon permissions for advanced custom-anchor commit, log-only publish, and proof import",
+      "reports": [
+        {
+          "id": "gh-issue-4875161426",
+          "projectId": "lightning-labs",
+          "title": "taprpc: granular macaroon permissions for advanced custom-anchor commit, log-only publish, and proof import",
+          "summary": "## Problem\n\nHosted / multi-tenant deployments that drive the advanced custom-anchor flow (a caller owns the BTC anchor transaction, asks tapd to commit assets into it, signs externally, then publishes/logs) cannot scope a macaroon to just that flow. The custom-anchor RPCs collapse into the single coarse `assets:write` entity/action, which also grants `SendAsset`, `BurnAsset`, `FundVirtualPsbt`, `SignVirtualPsbt`, `AnchorVirtualPsbts`, `NextInternalKey`/`NextScriptKey`, `ProveAssetOwnership`, backup import/export, etc. There is no way to hand an integration a credential that can commit-and-log against an externally-owned anchor without also handing it full custody-level send/burn authority.\n\nThree specific gaps:\n\n1. **Advanced commit and publish share the broad `assets:write` entity.** A macaroon that can call `CommitVirtualPsbts` / `PublishAndLogTransfer` necessarily also authorizes `SendAsset` and `BurnAsset`.\n2. **Log-only publish is indistinguishable from broadcast.** `PublishAndLogTransfer` takes a `SkipAnchorTxBroadcast` flag (log the transfer + ship proofs, but do not broadcast), but both the log-only and the actually-broadcasting variants require the exact same permission. A deployment that wants to allow \"record this transfer and ship proofs, but never let this credential put a transaction on-chain\" cannot express that.\n3. **Proof import has no stable, permissionable RPC.** The only RPC that ingests a raw proof-file blob, `ImportProof`, lives on the dev-only `tapdevrpc.TapDev` service and is not registered in a release build at all (see below). The production alternative, `RegisterTransfer`, does not accept an arbitrary proof blob.\n\nThe net effect is that a least-privilege integration either over-grants (`assets:write`) or cannot perform the operation at all (proof import in a non-dev build).\n\n## Current behaviour\n\nThe permission map is `RequiredPermissions` in `taprpc/perms.go:10` (there is already a maintainer TODO at `taprpc/perms.go:9`: \"re think these and go instead w/ the * approach?\").\n\nRelevant entries, all mapping the custom-anchor operations onto the same broad `assets:write`:\n\n- `CommitVirtualPsbts` -> `{assets, write}` at `taprpc/perms.go:126`\n- `PublishAndLogTransfer` -> `{assets, write}` at `taprpc/perms.go:130`\n\nThese are the same `{assets, write}` op used by `SendAsset` (`taprpc/perms.go:83`) and `BurnAsset` (`taprpc/perms.go:87`), so the entity cannot separate custom-anchor authoring from custody-level spends.\n\n`PublishAndLogTransfer`'s handler passes the request's skip-broadcast flag straight through to the freighter parcel with no permission differentiation between the log-only and broadcasting paths:\n\n- handler: `rpcserver/rpcserver.go:3396`\n- `req.SkipAnchorTxBroadcast` forwarded into `tapfreighter.NewPreAnchoredParcel(...)` at `rpcserver/rpcserver.go:3486`\n\nProof verification is already read-scoped and separate, which is good and should be preserved:\n\n- `VerifyProof` -> `{proofs, read}` at `taprpc/perms.go:67`, handl",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2213",
+          "problemKey": "lightninglabs/taproot-assets#2213",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:34:09Z",
+          "updatedAt": "2026-10-09T09:41:53Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2212",
+      "title": "rpc: expose custom-anchor capabilities and a machine-readable API version via GetInfo",
+      "reports": [
+        {
+          "id": "gh-issue-4875161140",
+          "projectId": "lightning-labs",
+          "title": "rpc: expose custom-anchor capabilities and a machine-readable API version via GetInfo",
+          "summary": "## Problem\n\nThere is no runtime way for an RPC client to discover which custom-anchor features a given `tapd` backend supports, nor to obtain a stable, machine-readable API/capability version. The only version signal exposed to clients is a free-form human string.\n\nThis matters specifically for lightweight/custom-anchor integrations that don't run their own `tapd` and instead drive a remote/hosted daemon over gRPC (e.g. building a caller-owned BTC anchor, committing assets via `CommitVirtualPsbts`, signing externally, then `PublishAndLogTransfer`). Such a caller cannot compile against the backend's Go version constants, so it can't tell whether the backend supports a given field or RPC before invoking it. The available custom-anchor RPCs — `FundVirtualPsbt`, `AnchorVirtualPsbts`, `CommitVirtualPsbts`, `PublishAndLogTransfer` (`taprpc/assetwalletrpc/assetwallet.proto:15`, `:34`, `:43`, `:52`) — and their request options have grown over time; the only signal that a feature exists is either the presence of a proto field in the client's own generated stubs (which says nothing about the *server*) or trial-and-error against a live daemon. A concrete example is `CommitVirtualPsbtsRequest.skip_funding` (`taprpc/assetwalletrpc/assetwallet.proto:354-358`, honored at `rpcserver/rpcserver.go:3058`): an older backend silently ignores it, and there is no capability the client can query to know whether zero-fee / externally-funded anchoring is actually supported.\n\n## Current behaviour\n\n`GetInfo` is declared at `taprpc/taprootassets.proto:133` and returns `GetInfoResponse` (`taprpc/taprootassets.proto:1715-1743`). The response carries only: `version` (string), `lnd_version`, `network`, `lnd_identity_pubkey`, `node_alias`, `block_height`, `block_hash`, `sync_to_chain`. There is no capability list and no numeric/structured API version.\n\nThe server implementation at `rpcserver/rpcserver.go:527-552` populates `Version` from `r.cfg.Version`. That value is wired in `tapcfg/server.go` as `Version: tap.Version()`, and `Version()` (`version.go:159-161`) returns a human-oriented string of the form `\"0.8.99-alpha commit=<...>\"` (assembled from `AppMajor/AppMinor/AppPatch/AppStatus` at `version.go:41-51` plus the build `Commit`). A client that wants feature gating has to string-parse this and hard-code a semver→feature mapping — brittle across `-alpha`/`-rc` suffixes, forks, and LiT-embedded builds where the agent name is overridden (`version.go:80-91`).\n\nThere is no capabilities/feature-bit surface for RPC clients today. The `FeatureBit` machinery that does exist (`tapchannel/aux_funding_controller.go:115-121`, `lndservices/feature_bit_verifier.go`, `rfq/manager.go`) is for Lightning peer/channel negotiation over the wire protocol, not for describing an `tapd` node's RPC capabilities to a gRPC caller.\n\nTest coverage confirms the gap: the `GetInfo` itest (`itest/integration_test.go:154-173`) only asserts the `network` field round-trips and that CLI and RPC responses match —",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2212",
+          "problemKey": "lightninglabs/taproot-assets#2212",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:34:07Z",
+          "updatedAt": "2026-10-09T09:41:49Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2211",
+      "title": "proof+tapfreighter: support unconfirmed multi-hop proof paths end to end",
+      "reports": [
+        {
+          "id": "gh-issue-4875160794",
+          "projectId": "lightning-labs",
+          "title": "proof+tapfreighter: support unconfirmed multi-hop proof paths end to end",
+          "summary": "## Problem\n\nThe send/publish pipeline in `tapfreighter` and `proof` bakes in two assumptions that break lightweight, custom-anchor integrations that own their BTC anchor transaction and build deep transaction graphs (chained checkpoints) before anything confirms:\n\n1. **Only the last transition in a proof file may be unconfirmed.** Everything else in the chain must have a confirmed anchor (valid block header + tx merkle proof). An integration can legitimately construct and verify a *compact unconfirmed proof path* (N chained transitions, none or all-but-one confirmed) inside the SDK, but tapd will not publish/log a package backed by such a path.\n\n2. **Every selected input proof must already live in the publishing tapd's local proof archive/asset store.** When the anchor is externally owned and the intermediate checkpoints were never imported (they can't be — import requires confirmation), the publish path fails closed at input-proof lookup.\n\nSeparately, when the BTC anchor txid of a checkpoint changes (e.g. the graph is re-materialized/re-bound during construction), the downstream V1 asset witnesses need to be re-associated with the new virtual transaction. There is no stable, exported helper for this, so integrations are forced to mutate protocol structs (`asset.Witness` / `asset.PrevID` / `PrevWitnesses[i].TxWitness`) by hand.\n\nBoth are upstream gaps: the SDK (see Context) can build and verify the path, but cannot get a stock tapd to accept it, so it fails closed rather than produce an invalid or partially-anchored transfer.\n\n## Current behaviour\n\nThe relevant publish surface is `RPCServer.PublishAndLogTransfer` (`rpcserver/rpcserver.go:3396`), which wraps the caller's fully-signed anchor tx and vPSBTs into a `PreAnchoredParcel` (`rpcserver/rpcserver.go:3484`, type at `tapfreighter/parcel.go:415`) and ships it through the chain porter. The parcel enters at `SendStateVerifyPreBroadcast` (`tapfreighter/chain_porter.go:1993`) and later reaches `SendStateStorePostAnchorTxConf` (`tapfreighter/chain_porter.go:2203`). Both stages assume confirmed, archived inputs:\n\n- **Pre-broadcast verify requires archived, confirmed inputs.** `verifyVPacketsPreBroadcast` (`tapfreighter/chain_porter.go:1508`) calls `verifyOutputProofPreBroadcast` (`tapfreighter/chain_porter.go:1555`), which reconstructs a full proof `File` by fetching the input proof from the archive via `p.fetchInputProof` (`tapfreighter/chain_porter.go:1636` and `:1621`) and then verifies it with `proof.WithSkipChainVerificationForFinalProof()` (`tapfreighter/chain_porter.go:1670`). That option only relaxes chain checks for the *last* proof: in `File.Verify`, `WithSkipChainVerification` is appended solely when `idx == len(f.proofs)-1` (`proof/verifier.go:1436`-`:1449`). Every earlier transition still runs the full header + merkle verification in `VerifyProofIntegrity` (`proof/verifier.go:1114`-`:1132`). So a compact path whose non-final hops are unconfirmed fails here.\n\n- **Input proofs must already",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2211",
+          "problemKey": "lightninglabs/taproot-assets#2211",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:34:05Z",
+          "updatedAt": "2026-10-09T09:41:45Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2210",
+      "title": "rpc: support multi-packet wallet funding for grouped multi-issuance transfers",
+      "reports": [
+        {
+          "id": "gh-issue-4875160512",
+          "projectId": "lightning-labs",
+          "title": "rpc: support multi-packet wallet funding for grouped multi-issuance transfers",
+          "summary": "## Problem\n\n`FundVirtualPsbt` can only ever return a single funded virtual packet. It hard-rejects any funding result that produced more than one packet. That is fine for a send that draws from a single asset ID/tranche, but it makes wallet-driven coin selection unusable for grouped assets: a group key that spans multiple tranches (multi-issuance) naturally selects inputs across several asset IDs, and the funding pipeline deliberately produces one virtual packet per asset ID. As a result, the wallet-selected path for grouped-group inputs is dead — the caller gets `only one packet supported` and cannot fund the transfer at all.\n\nThis matters specifically for lightweight/custom-anchor integrations that let tapd do coin selection (the caller owns the BTC anchor tx and just wants tapd to select and commit the assets). Anything that lets the wallet pick grouped inputs across tranches hits the guard. Only the explicit proof-selected/single-tranche case survives, because that collapses to a single asset ID and therefore a single packet.\n\n## Current behaviour\n\n`FundVirtualPsbt` funds via `AssetWallet.FundPacket` (PSBT template path, `rpcserver/rpcserver.go:2689`) or `AssetWallet.FundAddressSend` (raw template path, `rpcserver/rpcserver.go:2774`). Both return a `*tapfreighter.FundedVPacket`, whose `VPackets` field is a slice (`tapfreighter/wallet.go:250-262`):\n\n```\ntype FundedVPacket struct {\n\tVPackets []*tappsbt.VPacket\n\t...\n}\n```\n\nThat slice is populated by `createFundedPacketWithInputs`, which by design emits one packet per tranche. Its doc comment is explicit (`tapfreighter/fund.go:22-25`): \"A new vPacket is created for each tranche of the active asset (which is ... a single asset ID/tranche or group key with multiple tranches).\" The multi-packet fan-out happens in `tapsend.DistributeCoins` (`tapfreighter/fund.go:91-97` → `tapsend/allocation.go:439`), which groups inputs by asset ID and creates one virtual packet per asset ID (`tapsend/allocation.go:505-508`, via `GroupProofsByAssetID`). The result is returned as `FundedVPacket{VPackets: allPackets, ...}` at `tapfreighter/fund.go:151-155`.\n\nGrouped selection across multiple asset IDs is a first-class funding mode: `FundingDescriptor.DistinctSpecifier` (`tapsend/send.go:188-192`) says that when the group key is set, \"we ignore the asset ID and allow multiple inputs of the same group to be selected.\" So a grouped multi-issuance send is expected to select inputs from several asset IDs, which `DistributeCoins` then splits into several packets.\n\nDespite `FundedVPacket.VPackets` being a slice, the RPC layer collapses it to one and rejects the rest (`rpcserver/rpcserver.go:2811-2819`):\n\n```\n// TODO(guggero): Remove this once we support multiple packets.\nif len(fundedVPkt.VPackets) > 1 {\n\treturn nil, fmt.Errorf(\"only one packet supported\")\n}\n\nresponse.FundedPsbt, err = fn.Serialize(fundedVPkt.VPackets[0])\n```\n\nThe response message itself is single-packet shaped (`taprpc/assetwalletrpc/assetwallet.proto:173-19",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2210",
+          "problemKey": "lightninglabs/taproot-assets#2210",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:34:03Z",
+          "updatedAt": "2026-10-09T09:41:42Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2209",
+      "title": "rpcserver: preserve no-new-change funding semantics through CommitVirtualPsbts to lnd",
+      "reports": [
+        {
+          "id": "gh-issue-4875160150",
+          "projectId": "lightning-labs",
+          "title": "rpcserver: preserve no-new-change funding semantics through CommitVirtualPsbts to lnd",
+          "summary": "## Problem\n\n`CommitVirtualPsbts` lets a caller hand tapd a fully-specified BTC anchor PSBT (its own exact output topology) and asks tapd to fund it — select inputs, compute fees, and leave the caller's outputs untouched. For custom-anchor / lightweight integrations (e.g. SwapDK, which owns the anchor transaction and needs an exact, deterministic output set), the ability to say \"fund this, but do **not** add any new output\" is a hard requirement: an unexpected extra change output changes the txid, shifts output ordering, and can break downstream logic that references outputs by index or a protocol that mandates an exact topology.\n\nThe `anchor_change_output` oneof exposes an `add` boolean that reads as if `add = false` expresses exactly this \"no new change\" policy. It does not. tapd forwards the value faithfully to lnd, but lnd's `FundPsbt` coin-select path ignores the boolean entirely and will silently append a P2TR change output whenever coin selection produces leftover value above the dust limit. There is no fail-closed \"no change\" funding mode anywhere in the stack, so a caller that selected an exact topology has no way to enforce it.\n\n## Current behaviour\n\ntapd maps the RPC's `anchor_change_output` oneof 1:1 onto lnd's `walletrpc.PsbtCoinSelect` change-output oneof in `CommitVirtualPsbts`:\n\n- `rpcserver/rpcserver.go:3078-3091` — the `switch` over `req.AnchorChangeOutput`. The `*wrpc.CommitVirtualPsbtsRequest_Add` case (`rpcserver/rpcserver.go:3084-3087`) sets `coinSelect.ChangeOutput = &walletrpc.PsbtCoinSelect_Add{Add: change.Add}`, i.e. it passes the caller's `add` bool straight through, and always sets `ChangeType: P2TRChangeType` (`rpcserver/rpcserver.go:3070`). The tapd proto documents `add` only as \"Add a new P2TR change output to the PSBT if required\" (`taprpc/assetwalletrpc/assetwallet.proto:312-325`) — there is no documented \"no change at all\" meaning, and `existing_output_index` merely folds leftover into an existing output rather than suppressing change.\n\nOn the lnd side, the `add` value is discarded:\n\n- `lnd/lnrpc/walletrpc/walletkit_server.go:1700-1712` — the `case *PsbtCoinSelect_Add:` matches on the oneof *type*, never reading `t.Add`. Both `Add: true` and `Add: false` fall into the same branch, which leaves `changeIndex = -1` (set at `walletkit_server.go:1674`) and only picks a change *type*. The in-code comment states the intent is \"no change output should be used if possible or a new one should be created if needed.\"\n- `lnd/lnrpc/walletrpc/walletkit_server.go:2040-2049` and `2091-2100` — in `fundPsbtCoinSelect`, whenever the computed `changeAmt`/`changeAmount > 0`, lnd calls `handleChange` and adds the output. There is no branch that instead errors out; the only escape is dust (leftover ≤ dust limit).\n- `lnd/lnrpc/walletrpc/walletkit.proto:1557-1572` — lnd's own `change_output` oneof documents `add` the same way, with no no-change variant.\n\nNet effect: `add = false` is a silent no-op. lnd behaves identically to `add = true` a",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2209",
+          "problemKey": "lightninglabs/taproot-assets#2209",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:34:01Z",
+          "updatedAt": "2026-10-09T09:41:39Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2208",
+      "title": "rpc: make PublishAndLogTransfer idempotent (request ID + transfer-status reconciliation)",
+      "reports": [
+        {
+          "id": "gh-issue-4875159903",
+          "projectId": "lightning-labs",
+          "title": "rpc: make PublishAndLogTransfer idempotent (request ID + transfer-status reconciliation)",
+          "summary": "## Problem\n\n`AssetWallet.PublishAndLogTransfer` is the terminal, side-effecting step of the custom-anchor flow (`CommitVirtualPsbts` → external sign → `PublishAndLogTransfer`): it logs the transfer to the database, broadcasts the anchor tx, and ships proofs. But the RPC has no request/idempotency ID and no duplicate-safe semantics. If the response is lost (client timeout, dropped connection, proxy 5xx — common on the REST surface the SDK uses), the caller cannot tell whether the transfer was logged/broadcast, and a blind retry is unsafe: it re-enters the porter and logs a *second* `asset_transfers` row for the same anchor tx.\n\nFor lightweight/custom-anchor integrations (the SDK owns the BTC anchor tx and drives publishing) this is the single most dangerous failure mode, because it sits at the exact point where money moves. Without a request ID or a documented reconciliation path, an integrator has two bad options: never retry (and risk a stuck/abandoned transfer whose outcome is unknown) or retry (and risk double-logging). This is a backend gap the SDK cannot close on its own.\n\n## Current behaviour\n\nThe RPC request carries no idempotency key. `PublishAndLogRequest` has only `anchor_psbt`, `virtual_psbts`, `passive_asset_psbts`, `change_output_index`, `lnd_locked_utxos`, `skip_anchor_tx_broadcast`, and `label` — no `request_id`/`client_id`/dedup field (`taprpc/assetwalletrpc/assetwallet.proto:401`, RPC declared at `taprpc/assetwalletrpc/assetwallet.proto:47`). The response is a plain `taprpc.SendAssetResponse`.\n\nThe handler at `rpcserver/rpcserver.go:3396` does no dedup lookup before acting. It validates inputs/outputs, extracts the final tx, derives a label (`parcelLabel := \"pubandlog-\" + finalTx.TxHash()` at `rpcserver/rpcserver.go:3471`, overridden by `req.Label` when set), and calls `r.cfg.ChainPorter.RequestShipment(NewPreAnchoredParcel(...))` at `rpcserver/rpcserver.go:3483`.\n\n`ChainPorter.RequestShipment` (`tapfreighter/chain_porter.go:306`) has no in-flight/already-logged check — it validates the parcel, pushes it onto the porter channel, and runs a fresh state machine. In `SendStateStorePreBroadcast` (`tapfreighter/chain_porter.go:2016`) it calls `ExportLog.LogPendingParcel` (`tapfreighter/chain_porter.go:2107`).\n\n`LogPendingParcel` (`tapdb/assets_store.go:2697`) upserts the chain tx and then does an unconditional `q.InsertAssetTransfer(...)` (`tapdb/assets_store.go:2726`). The underlying query is a plain insert with no `ON CONFLICT` (`tapdb/sqlc/queries/transfers.sql:7`, `-- name: InsertAssetTransfer`). Crucially, `asset_transfers.anchor_txn_id` has only a non-unique index, not a unique constraint (`tapdb/sqlc/migrations/000005_transfers.up.sql:6` column, `:13` index). So although `chain_txns.txid` is `UNIQUE` and `UpsertChainTx` is idempotent (`tapdb/sqlc/migrations/000002_assets.up.sql:8`), a retry does **not** collide there — it instead creates a second transfer row bound to the same anchor tx (double-log), then re-broadcasts.\n\nThere ",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2208",
+          "problemKey": "lightninglabs/taproot-assets#2208",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:33:59Z",
+          "updatedAt": "2026-10-09T09:41:36Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2207",
+      "title": "assetwalletrpc: make CommitVirtualPsbts idempotent (request ID + status/lease lookup)",
+      "reports": [
+        {
+          "id": "gh-issue-4875159485",
+          "projectId": "lightning-labs",
+          "title": "assetwalletrpc: make CommitVirtualPsbts idempotent (request ID + status/lease lookup)",
+          "summary": "## Problem\n\n`AssetWallet.CommitVirtualPsbts` has no idempotency or status-lookup surface. Its one persistent side effect is funding the anchor PSBT through lnd, which locks (leases) wallet UTXOs. If the response is lost in transit (client timeout, dropped connection, tapd restart mid-call), the caller cannot tell whether the call succeeded or which lnd leases are now held. There is no request ID to retry against and no way to ask tapd \"what happened to this call, and what UTXOs did it lock?\".\n\nThis matters specifically for lightweight / custom-anchor integrations (e.g. the tap-sdk custom-anchor builder in lightninglabs/tap-sdk#158) that own the BTC anchor transaction and talk to tapd over RPC but do *not* have direct access to the backing lnd node. For those callers a lost response is unrecoverable in-band:\n\n- They cannot safely retry. A retry re-runs coin selection (`FundPsbt`) and locks a *different* set of UTXOs, producing a different funded PSBT while the first lease set stays locked until it expires. That is double coin selection plus a leaked lease, not an idempotent replay.\n- They cannot discover the leases the first (maybe-successful) call created, because tapd returns only outpoints and intentionally exposes no pass-through to lnd's lease listing.\n\nThe result is an out-of-band \"outcome-unknown\" reconciliation step that the SDK is forced to implement, and which it cannot do correctly without direct lnd access it is designed not to require.\n\n## Current behaviour\n\nRPC declared at `taprpc/assetwalletrpc/assetwallet.proto:43` and implemented at `rpcserver/rpcserver.go:3011`.\n\n- The call is stateless in tapd: it validates inputs, funds the anchor PSBT, computes output commitments and proof suffixes, and returns. No transfer/parcel row is written here — DB persistence happens only later in `PublishAndLogTransfer`, which calls `ChainPorter.RequestShipment` (`rpcserver/rpcserver.go:3483`). So tapd keeps no record that `CommitVirtualPsbts` ever ran.\n- Funding locks UTXOs via lnd's `FundPsbt` at `rpcserver/rpcserver.go:3111`, passing `CustomLockId` / `LockExpirationSeconds` straight through (`rpcserver/rpcserver.go:3071-3072`). Default lock ID and a 10-minute expiration apply when unset.\n- On any error path the leases are released by a deferred cleanup (`rpcserver/rpcserver.go:3131-3147`), gated by a `success` flag that is only set immediately before the successful return (`rpcserver/rpcserver.go:3055`, `:3223`). This handles server-side failures but does nothing for the case where tapd succeeds and the *response* is what is lost — the leases stay held and the caller never learns of them.\n- The response carries only the locked outpoints, not lock IDs, with an explicit note that callers are expected to reach into lnd for anything more: \"any additional information can be fetched from the lnd wallet directly (we don't want to create pass-through RPCs for all those methods)\" (`rpcserver/rpcserver.go:3210-3220`). `CommitVirtualPsbtsResponse.lnd_locked_u",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2207",
+          "problemKey": "lightninglabs/taproot-assets#2207",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:33:57Z",
+          "updatedAt": "2026-10-09T09:41:34Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2206",
+      "title": "rpcserver: use an independent bounded context for post-funding lease cleanup in CommitVirtualPsbts",
+      "reports": [
+        {
+          "id": "gh-issue-4875159184",
+          "projectId": "lightning-labs",
+          "title": "rpcserver: use an independent bounded context for post-funding lease cleanup in CommitVirtualPsbts",
+          "summary": "## Problem\n\n`CommitVirtualPsbts` asks lnd to fund the anchor transaction, which leases (locks) the selected on-chain UTXOs. If anything after funding fails, a deferred cleanup is supposed to release those leases so the coins become available again. That cleanup, however, runs on the same `context.Context` that the gRPC request carries. When the request context is canceled — client-side deadline exceeded, client disconnect, or an upstream cancellation — the cleanup fires but does nothing, because every `ReleaseOutput` call it makes is issued on the already-canceled context and returns immediately with `context canceled`. The net result is leaked/locked UTXOs that stay unspendable until the lock expiration elapses (`LockExpirationSeconds`, up to lnd's max of 10 minutes by default).\n\nThis matters most for lightweight/custom-anchor integrations (the tap-sdk advanced builder used by SwapDK), where the caller owns the BTC anchor transaction and drives `CommitVirtualPsbts` remotely. Remote callers are exactly the ones that hit request-context cancellation (network blips, timeouts), and they cannot see or clean up the lnd-side leases themselves — the whole point of the deferred cleanup is to compensate for a request that is being torn down, so it must not itself depend on that request's lifecycle.\n\n## Current behaviour\n\nThe handler receives the request context and funds via lnd, capturing the leased UTXOs:\n\n- `rpcserver/rpcserver.go:3011` — `func (r *RPCServer) CommitVirtualPsbts(ctx context.Context, ...)`; `ctx` is the gRPC request context.\n- `rpcserver/rpcserver.go:3111` — `lndWallet.FundPsbt(ctx, fundRequest)` returns `lockedUTXO`, the coins lnd just locked for us.\n\nThe cleanup is a `defer` guarded by a `success` flag, and it releases each lease using the request `ctx`:\n\n- `rpcserver/rpcserver.go:3131`-`3147` — the deferred cleanup loop.\n- `rpcserver/rpcserver.go:3141` — `err := lndWallet.ReleaseOutput(ctx, lockID, op)` — the release is issued on the request context.\n- `rpcserver/rpcserver.go:3223` — `success = true` is only set on the fully-successful path, so any early error return between funding and here invokes the cleanup.\n\nWhy the cleanup is a no-op once `ctx` is canceled: `ReleaseOutput` derives its RPC context from the passed-in context, so a dead parent context yields a dead child:\n\n- `lndclient@v0.21.0-1 walletkit_client.go:168`-`183` — `func (m *walletKitClient) ReleaseOutput(ctx, ...)` does `rpcCtx, cancel := context.WithTimeout(ctx, rpcTimeout)` and then calls `m.client.ReleaseOutput(rpcCtx, ...)`. If `ctx` is already canceled, `rpcCtx` is born canceled and the gRPC call fails immediately; the lease is never released.\n\nSo the leak occurs whenever the handler returns before line 3223 with `success == false` while `ctx` is canceled — e.g. the request deadline expires (or the client disconnects) after `FundPsbt` locked the UTXOs, and any subsequent step (commitment/proof-suffix construction or serialization at `rpcserver/rpcserver.go:3152`-",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2206",
+          "problemKey": "lightninglabs/taproot-assets#2206",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-07-13T15:33:55Z",
+          "updatedAt": "2026-10-09T09:41:25Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2162",
+      "title": "[feature]: Itest tranches should use same network",
+      "reports": [
+        {
+          "id": "gh-issue-4675763738",
+          "projectId": "lightning-labs",
+          "title": "[feature]: Itest tranches should use same network",
+          "summary": "## Description\n\nWhen running an itest tranche currently we go through the network setup once for each itest. We can instead use a static network that wipes/resets databases to emulate fresh instances instead of tearing things down and setting them up again.\n\nThe end goal is to significantly speed up the itest sequence execution time within the same tranche.\n\n",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2162",
+          "problemKey": "lightninglabs/taproot-assets#2162",
+          "platform": "GitHub",
+          "author": "GeorgeTsagk",
+          "isBot": false,
+          "publishedAt": "2026-06-16T15:47:45Z",
+          "updatedAt": "2026-10-09T09:41:10Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2000",
+      "title": "[bug]: transfer proof stuck PENDING, listAssets zero",
+      "reports": [
+        {
+          "id": "gh-issue-3959853952",
+          "projectId": "lightning-labs",
+          "title": "[bug]: transfer proof stuck PENDING, listAssets zero",
+          "summary": "## Description\n\n**Environment**\n- Node: mcu-616-main (Voltage)\n- TAPD Version: 0.7.0-alpha\n- TAPD REST: [https://xxxx.m.voltageapp.io:443](https://xxxx.m.voltageapp.io:443)\n- Chain: sync_to_chain=true, block_height in sync\n\n**Issue**\nOne outbound Taproot Assets transfer has been confirmed on-chain for over **4 hours**. In `ListTransfers`, one output (the one to the recipient) still shows  \n`proof_delivery_status = PROOF_DELIVERY_STATUS_PENDING`. As a result, `getMcu616Balance()` (and thus `listAssets` for that asset) returns **0**, and we cannot send new asset batches for orders.\n\n---\n\n**Self-check (via TAPD REST)**\n- Universe federation: 1 server — `universe.lightning.finance:10029`\n  (default mainnet Universe present).\n- Universe sync config (`GET /v1/taproot-assets/universe/sync/config`):\n  - **PROOF_TYPE_TRANSFER**: \n    - `allow_sync_insert=false`\n    - `allow_sync_export=true`\n  - **PROOF_TYPE_ISSUANCE**: \n    - `allow_sync_insert=false`\n    - `allow_sync_export=true`\n\nThe node exports proofs to the federation but does not insert (pull) proofs from it. We suspect this is why the transfer output never leaves **PENDING** and our balance stays **zero**.\n\n---\n\n**Request**\nPlease enable `allow_sync_insert` for **PROOF_TYPE_TRANSFER** (or the equivalent setting on your side) so that this node can pull transfer proofs from the federation and the delivery status can move to **COMPLETE**. If your default policy is to keep insert disabled, we would like to understand the recommended way to resolve persistent **PENDING** and zero `listAssets` after a chain-confirmed transfer.\n\n**Recipient Address (for Reference)**\nThe pending output is for this MCU616 address (decoded successfully, asset_id and amount match):  \n`tapbc1qqqszqspqqzzp0nudneszexrnu3k7f7qla59u9mlkfkfz26hsln2e2l40z853n3zqcssyuzuqygr965m0pahjqxuknee3kvdhvfpjlux6aut8rvw3zevst4ppqssxz4mcx29d3teh37m2lcv9rhzjd0kde656t0utrdqau4rx670rzulpgyl7qqqgsvrwupyqqxzuatwd9mx2unnv4e8qce69uhh2mnfwejhyum99ekxjemgw3hxjmn89enxjmnpde3k2w33xqcrywgdvsptt`\n\nThank you.",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2000",
+          "problemKey": "lightninglabs/taproot-assets#2000",
+          "platform": "GitHub",
+          "author": "beeforbacon",
+          "isBot": false,
+          "publishedAt": "2026-02-18T21:22:37Z",
+          "updatedAt": "2026-10-09T09:40:58Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2076",
+      "title": "ListAssets with group_key filter returns empty while ListBalances reports a non-zero group balance",
+      "reports": [
+        {
+          "id": "gh-issue-4295076694",
+          "projectId": "lightning-labs",
+          "title": "ListAssets with group_key filter returns empty while ListBalances reports a non-zero group balance",
+          "summary": "## Observation\n\nReproducible in regtest against tapd main\n(\\`0.7.99-alpha commit=v0.7.0-506-ge5b652e9\\`) while running the\ntap-sdk TestBurnAssetByGroupKey scenario:\n\n1. Mint a grouped fungible asset of 500 units.\n2. Burn 100 of them.\n3. Mine 6 blocks, wait for \\`synced_to_chain\\`.\n4. \\`ListBalances --by-group --group-key <tweaked>\\` returns\n   \\`{balance: \\\"400\\\"}\\`.\n5. \\`ListAssets --group-key <tweaked>\\` (default script-key filter)\n   returns an empty list.\n\nThe wallet demonstrably owns 400 units of the group (the daemon's own\nledger says so) but cannot list a single asset that belongs to it. If\nthe script-key filter is widened to \\`--all-script-keys\\`, the tranche\nshows up.\n\n## Why this matters\n\nClients that use the semantic \\`AssetRef → ListBalances → ListAssets\\`\nflow to enrich a balance with genesis metadata silently fall over\nhere. The tap-sdk has to either work around it (papering over a\ndaemon-level inconsistency) or propagate an error that is not true\nfrom the user's perspective.\n\n## Proposal\n\n- Default \\`ListAssets\\` with a \\`group_key\\` filter should surface every\n  tranche whose remaining balance contributes to the \\`ListBalances\\`\n  total, regardless of script-key type. The two RPCs should not\n  disagree on \\\"what's in this group.\\\"\n- If the current behavior is intentional (e.g. burn-output script keys\n  intentionally excluded), document the invariant loudly so clients\n  stop treating the balance as \\\"there's an asset somewhere.\\\"\n\n## Context\n\nFound while bringing up parity itests in tap-sdk PR #37. The SDK had a\nworkaround that I rolled back so the server-side issue stays visible.",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2076",
+          "problemKey": "lightninglabs/taproot-assets#2076",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-04-20T10:48:40Z",
+          "updatedAt": "2026-10-09T09:40:49Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2080",
+      "title": "ListBatches REST path filter silently returns empty on wrong batch_key encoding",
+      "reports": [
+        {
+          "id": "gh-issue-4295076840",
+          "projectId": "lightning-labs",
+          "title": "ListBatches REST path filter silently returns empty on wrong batch_key encoding",
+          "summary": "## Observation\n\n`GET /v1/taproot-assets/assets/mint/batches/{batch_key}` accepts `batch_key` as a URL-safe base64-without-padding string (grpc-gateway default for path `bytes`). Any other encoding:\n\n- Hex: silently returns `{\"batches\": []}`\n- Standard base64 with padding: silently returns `{\"batches\": []}`\n- URL-safe base64 with padding: silently returns `{\"batches\": []}`\n- URL-safe base64 without padding: works\n\nThe server accepts the request, returns 200, and hands back zero rows. From a client's perspective this is indistinguishable from \"the batch with that key does not exist.\"\n\n## Impact\n\nThe tap-sdk used to send `batch_key` as hex (mirroring the tapcli output). `WaitForMint` polled `ListBatches --batch-key <hex>` for 60 seconds, always saw zero rows, and timed out. The mint had actually finalized — we just couldn't see it through this endpoint.\n\n## Proposal\n\n- Return 400 with `invalid batch_key: <detail>` when the path parameter cannot be decoded, instead of silently succeeding with zero rows.\n- Optionally accept multiple base64 variants (same fix as the query parameter encoding issue).\n\n## Context\n\nFound while wiring up the tap-sdk REST client tests in PR #37.\n",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2080",
+          "problemKey": "lightninglabs/taproot-assets#2080",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-04-20T10:48:42Z",
+          "updatedAt": "2026-10-09T09:40:45Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2079",
+      "title": "ListGroups: commit to one canonical group-key encoding in responses",
+      "reports": [
+        {
+          "id": "gh-issue-4295076831",
+          "projectId": "lightning-labs",
+          "title": "ListGroups: commit to one canonical group-key encoding in responses",
+          "summary": "## Observation\n\n\\`ListGroups\\` returns \\`map<string, GroupedAssets>\\` where the map key is\nthe group key. Today those keys have historically appeared in two\ndifferent forms depending on code path:\n\n- 33-byte compressed, serialised as hex (what the current code does).\n- 32-byte x-only, serialised as hex (what some legacy paths returned).\n\nThe tap-sdk had to land a targeted fix (\\`parseGroupRefKey\\`) to\npreserve compressed keys through x-only parsing — odd-Y keys get\nflipped when round-tripped through Schnorr serialisation, which broke\nbalance lookups for a fraction of minted groups.\n\nSee https://github.com/lightninglabs/tap-sdk/blob/feat/integration-tests/itest/assets.go#L128\nfor the full workaround.\n\n## Proposal\n\n- Commit the API to one encoding in the response (preferably 33-byte\n  compressed hex, matching \\`AssetGroup.tweaked_group_key\\`).\n- Document that invariant in the proto comment.\n- Add a test that round-trips odd-Y keys through ListGroups to catch\n  regressions.\n\n## Why this matters\n\n\\`ListGroups\\` is the canonical enumerate-what-I-have API. If the key\nrepresentation is ambiguous, every downstream client has to reinvent\nthe compressed-vs-x-only-case-split logic.",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2079",
+          "problemKey": "lightninglabs/taproot-assets#2079",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-04-20T10:48:41Z",
+          "updatedAt": "2026-10-09T09:40:30Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2081",
+      "title": "events: cover asset visibility, group discovery, universe sync, federation, chain sync, and mint replay",
+      "reports": [
+        {
+          "id": "gh-issue-4295205074",
+          "projectId": "lightning-labs",
+          "title": "events: cover asset visibility, group discovery, universe sync, federation, chain sync, and mint replay",
+          "summary": "## Context\n\n`SubscribeReceiveEvents` / `SubscribeSendEvents` / `SubscribeMintEvents` cover the transfer + mint lifecycle well, but several high-level state changes that downstream consumers care about still have no event and can only be detected by polling. Surfaced while bringing up the [tap-sdk regtest harness](https://github.com/lightninglabs/tap-sdk/pull/37) — every `WaitFor*` helper ends up as a `require.Eventually` loop because there is no edge-triggered notification it could subscribe to.\n\nFiling as one ticket so the event surface can be designed coherently.\n\n## Missing events\n\n1. **Asset visibility event.** No signal when a new asset first becomes visible to `ListAssets` (post-universe sync, post-bootstrap from a federation peer, post-receive flow finalizing). Consumers have to poll `ListAssets` until the expected asset appears.\n2. **Group discovery event.** Same pattern for `ListGroups`. After bootstrapping a federation peer, consumers poll until the group shows up.\n3. **Universe sync completion event.** `SyncUniverse` is synchronous but the bootstrap→address-creation flow has races that need a \"sync finished\" signal per peer. An event for `UniverseSyncCompleted` / `UniverseSyncFailed` with the peer host and the sync target would replace the retry loops consumers currently wrap around `NewAddr`.\n4. **Federation membership change event.** After `AddFederationServer`, the peer is added but not immediately syncable. An event fired when the peer transitions to \"syncable\" (or when gossip metadata lands) would remove another polling pattern.\n5. **Chain-synced event.** `GetInfo` exposes `synced_to_chain`. Consumers that want to gate work on chain-sync today poll that field. An edge-triggered event at the rising edge would let them subscribe once.\n6. **Mint event replay / starting cursor.** `SubscribeMintEvents` only emits transitions from connect time forward. A subscribe option that first replays the current state (or the last transition per batch key) would close the race where a batch finalizes between `FinalizeBatch` and `Subscribe`, which currently forces consumers to fall back to polling `ListBatches`.\n\nDesign doc:\n\n[TAPD_EVENT_SUBSCRIPTIONS_DESIGN.md](https://github.com/user-attachments/files/27017324/TAPD_EVENT_SUBSCRIPTIONS_DESIGN.md)",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2081",
+          "problemKey": "lightninglabs/taproot-assets#2081",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-04-20T11:11:47Z",
+          "updatedAt": "2026-10-09T09:40:15Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#503",
+      "title": "Optimise universe proof leaf additional inputs",
+      "reports": [
+        {
+          "id": "gh-issue-1895036934",
+          "projectId": "lightning-labs",
+          "title": "Optimise universe proof leaf additional inputs",
+          "summary": "As things currently stand, a universe's proof leaf has a field called `AdditionalInputs`. This field contains proofs for other inputs that may have been merged as part of a spend.\r\n\r\nThe `AdditionalInputs` field is of type `[]proof.File`. Which means, that for each additional input, we store an entire proof file. A universe leaf is supposed to represent a single proof. But where additional inputs are concerned, a universe leaf may also contain entire proof files for each additional input. \r\n\r\nThis means that a universe makes sub-optimal use of memory in that each leaf may also contain entire proof files which are duplicated as leaves in other parts of the universe.\r\n\r\nWithin a universe leaf, the `AdditionalInputs` field should perhaps contain proof locators instead of entire proof files.  ",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/503",
+          "problemKey": "lightninglabs/taproot-assets#503",
+          "platform": "GitHub",
+          "author": "ffranr",
+          "isBot": false,
+          "publishedAt": "2023-09-13T18:24:52Z",
+          "updatedAt": "2026-10-09T09:39:54Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#147",
+      "title": "proofs+tarodb: stop storing proofs files in the DB switch to mmap access to on disk files everywhere",
+      "reports": [
+        {
+          "id": "gh-issue-1388516333",
+          "projectId": "lightning-labs",
+          "title": "proofs+tarodb: stop storing proofs files in the DB switch to mmap access to on disk files everywhere",
+          "summary": "Today we store proofs in the DB, mainly for simplicity and to ensure we can atomically update proofs when we modify assets. IMO what we really want to do is only store them on disk, them use memory-mapping to access the proofs over contained memory regions. This means we minimize copying, and can pass around pointers in memory to the relevant mmap'd region. On top of this, we'll either want to maintain an external file w/ an index, or maintain the index within the database itself. ",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/147",
+          "problemKey": "lightninglabs/taproot-assets#147",
+          "platform": "GitHub",
+          "author": "Roasbeef",
+          "isBot": false,
+          "publishedAt": "2022-09-27T23:42:07Z",
+          "updatedAt": "2026-10-09T09:38:54Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#10",
+      "title": "proofs: introduce proof compression or tomb-stoning scheme ",
+      "reports": [
+        {
+          "id": "gh-issue-1202648768",
+          "projectId": "lightning-labs",
+          "title": "proofs: introduce proof compression or tomb-stoning scheme ",
+          "summary": "The main tradeoff the approach makes (fundamental to client side validation) is that proofs increase with the number of transfers. Achieving better scaling here is desirable. \r\n\r\n## Skip Lists\r\n\r\nOne sketch of a way we can do this, is to implement a sort of skip list structure in the proof file formats. Rather than a new state transition committing to only its predecessor, what if there was a way for it to also commit to further links back into the chain? Assuming we had a sound scheme here, then we'd be able to reduce the proof size to a logarithmic length, possibly giving up a bit of soundness (probability that the asset is invalid) along the way. \r\n\r\nProjects like fly client use a similar structure, as to other NiPoPoW schemes. However in this case they're reliant on the Pow structure to create the back links. Is there something else we can use here, or does it not matter at all? \r\n\r\n## Tombstoning\r\n\r\nAnother way to reduce proof sizes would be via the aide of the Cannonical Universe. Periodically we can essentially burn and then re-create the assets a new. The burnt assets would be probably burn on chain, with another transaction then creating the assets a new. This seems immediately practical, and mainly relies on the incentive of the asset issuer to want to be able to allow proofs sizes to remain as small as possible. A new sub-commitment would then track the set of burnt assets, and some interaction with the Universe operator would be required to re-create the assets. \r\n\r\nThis seems the most immediately practical, and rests on an assumption that the Cannonical Universe creator has some sort of influence over the assets at the end of the day (holds reserves). \r\n\r\n## NIZKP\r\n\r\nAnother way we can reduce the proof size, but increase the cost of transfers (as a tradeoff). Would be to seek out snark/stark friendly hash functions, like [MiMC](https://byt3bit.github.io/primesym/) and use that in a new version instead of sha2 everywhere. We'd likely want to go a step further and implement certain invariants natively in the circom circuit format. \r\n\r\nUsing MiMC in the asset tree itself helps with proof complexity, but then we still need to factor in the Bitcoin side of things: sha2 hash links, the header format, the merkle tree structure, and also PoW. We may be able to solicit the recent grantee from the HRF to look into the feasibility of zk rollups on Bitcoin.",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/10",
+          "problemKey": "lightninglabs/taproot-assets#10",
+          "platform": "GitHub",
+          "author": "Roasbeef",
+          "isBot": false,
+          "publishedAt": "2022-04-13T01:48:09Z",
+          "updatedAt": "2026-10-09T09:38:43Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#1241",
+      "title": "tapdb: add table to track anchored altLeaves",
+      "reports": [
+        {
+          "id": "gh-issue-2719949224",
+          "projectId": "lightning-labs",
+          "title": "tapdb: add table to track anchored altLeaves",
+          "summary": "In #1233 , we add logic to look up the altLeaves used for an anchor input, during coin selection. This must be looked up separately from assets, since altLeaves are not stored in the `assets` table.\r\n\r\nRight now this is done by fetching the whole input proof, decoding only the last proof, and then reading the altLeaves from there:\r\n\r\nhttps://github.com/lightninglabs/taproot-assets/blob/f49820fd73aa850ca007df6357437b80af981294/tapdb/assets_store.go#L2171\r\n\r\nThis implementation works, but could cause performance issues as the total input proof size grows. That potential issue is something we also wouldn't detect in our itests, as-is.\r\n\r\n# Proposed Enhancement\r\n\r\nA better option would be:\r\n- [ ] Add new DB table to track the outpoint -> altLeaves mapping.\r\n\r\nConsequently, We could then look up the altLeaves directly and never decode the input proof in this DB transaction.\r\n\r\nSince we're dealing with P2TR tx's, I think using the outpoint as the unique key for storage should be fine; it also wouldn't change in the case of re-orgs.\r\n\r\n[edit by maintainer]",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/1241",
+          "problemKey": "lightninglabs/taproot-assets#1241",
+          "platform": "GitHub",
+          "author": "jharveyb",
+          "isBot": false,
+          "publishedAt": "2024-12-05T10:07:49Z",
+          "updatedAt": "2026-10-09T09:38:10Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2322",
+      "title": "tapdb: deleting an absent key from a DB-backed MS-SMT corrupts later inserts",
+      "reports": [
+        {
+          "id": "gh-issue-5633291296",
+          "projectId": "lightning-labs",
+          "title": "tapdb: deleting an absent key from a DB-backed MS-SMT corrupts later inserts",
+          "summary": "Deleting a key that is not in a DB-backed `mssmt.CompactedTree` writes rows for the empty leaf into `mssmt_nodes`, and later inserts read those rows back as real nodes. Once that happens, the stored tree no longer matches its leaves. The root hash is wrong, `Get` returns the wrong leaf, and `MerkleProof` produces proofs that fail to verify against the root. The in-memory `mssmt.DefaultStore` handles the same operations correctly.\n\nI found this while reviewing lightninglabs/taproot-assets#2320. The bug predates that PR and behaves identically with and without it.\n\n### Reproduction\n\nThe test below fails on `main` (93420d46) in 5 of 5 runs with `root mismatch`:\n\n```go\npackage tapdb\n\nimport (\n\t\"context\"\n\t\"crypto/rand\"\n\t\"database/sql\"\n\t\"testing\"\n\n\t\"github.com/lightninglabs/taproot-assets/mssmt\"\n\t\"github.com/stretchr/testify/require\"\n)\n\n// TestCompactedTreeAbsentDelete deletes a key that is not in the tree, then\n// inserts keys whose path crosses the empty slot the delete wrote a row for.\n// The DB-backed tree must match the in-memory reference.\nfunc TestCompactedTreeAbsentDelete(t *testing.T) {\n\tctx := context.Background()\n\n\tdb := NewTestDB(t)\n\ttxCreator := func(tx *sql.Tx) TreeStore { return db.WithTx(tx) }\n\ttreeDB := NewTransactionExecutor(db, txCreator)\n\n\tdbTree := mssmt.NewCompactedTree(\n\t\tNewTaprootAssetTreeStore(treeDB, \"absent-delete\"),\n\t)\n\trefTree := mssmt.NewCompactedTree(mssmt.NewDefaultStore())\n\n\t// key returns a random key whose leading bits are the given path.\n\tkey := func(path ...byte) [32]byte {\n\t\tvar k [32]byte\n\t\t_, _ = rand.Read(k[:])\n\t\tfor i, b := range path {\n\t\t\tif b == 1 {\n\t\t\t\tk[i/8] |= 1 << (i % 8)\n\t\t\t} else {\n\t\t\t\tk[i/8] &^= 1 << (i % 8)\n\t\t\t}\n\t\t}\n\t\treturn k\n\t}\n\tleaf := func(sum uint64) *mssmt.LeafNode {\n\t\tv := make([]byte, 16)\n\t\t_, _ = rand.Read(v)\n\t\treturn mssmt.NewLeafNode(v, sum)\n\t}\n\n\tkx, absent := key(0, 0, 1), key(0, 0, 0)\n\ty, z, w := key(1, 0, 0, 0), key(1, 0, 0, 1), key(1, 0, 1)\n\tlx, ly, lz, lw := leaf(1), leaf(2), leaf(3), leaf(4)\n\n\tfor _, tree := range []*mssmt.CompactedTree{dbTree, refTree} {\n\t\t_, err := tree.Insert(ctx, kx, lx)\n\t\trequire.NoError(t, err)\n\n\t\t// The key is absent, so the root must not change.\n\t\t_, err = tree.Delete(ctx, absent)\n\t\trequire.NoError(t, err)\n\n\t\tfor _, kv := range []struct {\n\t\t\tk [32]byte\n\t\t\tl *mssmt.LeafNode\n\t\t}{{y, ly}, {z, lz}, {w, lw}} {\n\t\t\t_, err = tree.Insert(ctx, kv.k, kv.l)\n\t\t\trequire.NoError(t, err)\n\t\t}\n\t}\n\n\trefRoot, err := refTree.Root(ctx)\n\trequire.NoError(t, err)\n\tdbRoot, err := dbTree.Root(ctx)\n\trequire.NoError(t, err)\n\trequire.Equal(t, refRoot.NodeHash(), dbRoot.NodeHash(), \"root mismatch\")\n\n\tgot, err := dbTree.Get(ctx, w)\n\trequire.NoError(t, err)\n\trequire.Equal(t, lw.Value, got.Value, \"Get(w) returned wrong leaf\")\n\n\tproof, err := dbTree.MerkleProof(ctx, w)\n\trequire.NoError(t, err)\n\trequire.True(t, mssmt.VerifyMerkleProof(w, lw, proof, dbRoot))\n}\n```\n\n```\ngo test -tags=dev -run TestCompactedTreeAbsentDelete ./tapdb/\n```\n\n### Cause\n\n1. `CompactedTree.Delete` calls `insert` with `Emp",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2322",
+          "problemKey": "lightninglabs/taproot-assets#2322",
+          "platform": "GitHub",
+          "author": "darioAnongba",
+          "isBot": false,
+          "publishedAt": "2026-09-29T15:53:33Z",
+          "updatedAt": "2026-10-09T07:01:48Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2205",
+      "title": "tapchannel: aux sweeper assumes fixed layout",
+      "reports": [
+        {
+          "id": "gh-issue-4874691287",
+          "projectId": "lightning-labs",
+          "title": "tapchannel: aux sweeper assumes fixed layout",
+          "summary": "## Summary\n\nThe aux sweeper assumes a fixed layout for the sweep transaction lnd builds: the shared asset output at index 0, ordinary change one past the highest asset output. Neither is guaranteed. lnd places required outputs (pre-signed second-level HTLC outputs) first and appends the asset output after them, and it omits ordinary change entirely when it is dust. The broadcast-time fixup only corrects packets tied to required outputs, so direct-sweep packets keep their assumed index.\n\nThe root problem is conceptual: output roles are inferred from assumed positions rather than bound to the transaction actually constructed. Everything below is a symptom of that.\n\n## Consequences\n\nIn a batch mixing pre-signed HTLC inputs with direct asset sweeps — a combination lnd's sweeper is explicitly designed to produce — direct packets anchor their transition proofs into the wrong output.  In the dust case, an exclusion proof is generated for an output that does not exist. Either way the BTC sweep confirms but the asset transfer is recorded against a transaction shape that isn't real: proofs fail and the swept assets are stranded at the proof level.\n\nThe common all-direct batch happens to match the assumed layout, which is why this has not yet surfaced.\n\n## Anchors\n\n- Assumed index 0: `aux_sweeper.go:273`; assumed change position: `aux_sweeper.go:2696,2727`; partial fixup: `aux_sweeper.go:2647`.\n- Actual layout: `lnd/sweep/fee_bumper.go:1527-1558` (required outputs first, asset output appended); `:1776-1792` (dust change omitted). Mixed batches by design: `lnd/sweep/tx_input_set.go:286-321`.\n\n## Fix\n\nInvert the direction of knowledge: derive roles from the final transaction rather than predicting them. Locate the asset output by pkScript match (as `reanchorAssetOutputs` already does for the commitment), reserve the outpoint map for required-output packets, and emit the change exclusion proof only when the change output exists. Batches containing foreign non-asset P2TR required outputs need a policy — convey their key/tree metadata, or forbid co-batching.\n\n",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2205",
+          "problemKey": "lightninglabs/taproot-assets#2205",
+          "platform": "GitHub",
+          "author": "jtobin",
+          "isBot": false,
+          "publishedAt": "2026-07-13T14:38:21Z",
+          "updatedAt": "2026-10-09T03:11:15Z",
+          "status": "closed",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightninglabs/taproot-assets#2326",
+      "title": "[feature]: Authenticated mutable application state for Collectible assets",
+      "reports": [
+        {
+          "id": "gh-issue-5701287393",
+          "projectId": "lightning-labs",
+          "title": "[feature]: Authenticated mutable application state for Collectible assets",
+          "summary": "**Is your feature request related to a problem? Please describe.**\n\nSome assets need a persistent identity while their application state evolves. A game collectible, for example, could gain levels or permanent upgrades without changing its `asset_id`. Similar needs arise with tickets that can be redeemed, credentials whose status changes, or other collectibles with an evolving lifecycle.\n\nOwnership and state updates can also require different permissions. The owner should be free to transfer an item, but ownership alone should not let them fabricate its level, redemption status or other application-defined state.\n\nGenesis and MetaHash should remain immutable. The question is whether TAP could also carry a separate application-state commitment with its own update authority.\n\nTwo useful reference points are RGB and Cardano's CIP-68:\n\n- RGB identifies a contract through its Genesis and lets its state evolve through schema-defined transitions. [RGB documentation](https://docs.rgb.info/rgb-state-and-operations/components-of-a-contract-operation).\n- CIP-68 separates the transferable user token from a reference NFT whose output carries metadata in a datum. Script logic can control updates to that output. [CIP-68](https://cips.cardano.org/cip/cip-68).\n\nThese provide examples of separating persistent identity, evolving state and update rules. We built a small POC to explore whether TAP can express that separation using its existing VirtualTx, Taproot/Tapscript authorization and proof lineage.\n\n**Describe the solution you'd like**\n\nThe experiment adds a state commitment and a second authorization policy alongside ownership:\n\n```text\nGenesis                          immutable identity\nScriptKey / TxWitness            ownership authorization\nStateCommitment                  opaque 32-byte state commitment\nStateScriptKey / StateTxWitness  state-mutation authorization\n```\n\nThe rule is:\n\n```text\nif StateCommitment or StateScriptKey changes:\n    StateTxWitness must satisfy the PREVIOUS StateScriptKey\n```\n\nNormal ownership authorization remains required. Transfers can preserve state without involving the state authority; mutations require both authorizations.\n\n`StateScriptKey` uses the existing `ScriptKey` representation, and `StateTxWitness` uses `wire.TxWitness`. Both authorizations validate the same VirtualTx through separate synthetic P2TR prevouts and sighash caches, using the existing `txscript.Engine`. State signatures use DEFAULT/ALL to bind the resulting output.\n\nAuthority rotation follows the same rule: the owner and Q1 authorize an output containing Q2. Subsequent mutations must satisfy Q2, while `asset_id` remains unchanged.\n\nTAP authenticates the transition. The meaning and validity of something like `level=8` remain application-level concerns. No new VM or signature scheme is introduced.\n\n**Describe alternatives you've considered**\n\nKeeping signed state records outside TAP can work. The application would handle asset binding, update authorization, s",
+          "url": "https://github.com/lightninglabs/taproot-assets/issues/2326",
+          "problemKey": "lightninglabs/taproot-assets#2326",
+          "platform": "GitHub",
+          "author": "vctt94",
+          "isBot": false,
+          "publishedAt": "2026-10-04T16:45:19Z",
+          "updatedAt": "2026-10-05T22:37:52Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11316",
+      "title": "[bug]: Briefly Unavailable Feerate Source defaults to 25 sats/vB leading to FCs",
+      "reports": [
+        {
+          "id": "gh-issue-5805725247",
+          "projectId": "lightning-labs",
+          "title": "[bug]: Briefly Unavailable Feerate Source defaults to 25 sats/vB leading to FCs",
+          "summary": "### Pre-Submission Checklist\n\n- [x] I have searched the existing issues and believe this is a new bug.\n- [x] I am not asking a question about how to use lnd, but reporting a bug (otherwise open a discussion).\n\n### LND Version\n\nv0.21.1-beta, for example\n\n### LND Configuration\n\nBitcoin Core as feerate source, for example\n\n### Backend Version\n\nAny Bitcoin Core\n\n### Backend Configuration\n\ndefault\n\n### OS/Distribution\n\nAny\n\n### Bug Details & Steps to Reproduce\n\nIf the feerate source (in some cases at least Bitcoin Core, but I imagine likely others) is unavailable for as short as 20 minutes LND keeps running but instantly sets all the feerates it uses for peer channels to 25 sats/vB. This is (obviously) an absurd feerate today, and can lead to force-closures as setting an absurd feerate can be indistinguishable from a dust-inflation attack making it look like a peer is trying to steal funds.\n\n### Expected Behavior\n\nIf the entire chain backend is offline, setting feerates really high isn't really that interesting of a solution - we aren't syncing the chain at all, and there's lots of risk to that, worrying about channel feerates is the least of our concerns. Even more generally, setting the channel feerate high isn't really the most critical thing to do - if there's active anchor spends going on that aren't confirming we definitely need to RBF them (irrespective of our feerate estimator!) but bumping the channel fee almost doesn't matter - post-anchors its not all that important at all. Risking force-closure for this post-anchors really doesn't feel like the right tradeoff.\n\n### Debug Information\n\n_No response_\n\n### Environment\n\n_No response_",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11316",
+          "problemKey": "lightningnetwork/lnd#11316",
+          "platform": "GitHub",
+          "author": "TheBlueMatt",
+          "isBot": false,
+          "publishedAt": "2026-10-11T22:14:00Z",
+          "updatedAt": "2026-10-11T22:34:40Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 1,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#10736",
+      "title": "[epic]: BOLT 12 Implementation Roadmap",
+      "reports": [
+        {
+          "id": "gh-issue-4276049253",
+          "projectId": "lightning-labs",
+          "title": "[epic]: BOLT 12 Implementation Roadmap",
+          "summary": "[BOLT 12](https://github.com/lightning/bolts/blob/master/12-offer-encoding.md) is an alternative to BOLT 11 invoices with reusable offers, a two-step negotiation protocol where a payer decodes an offer, requests an invoice via onion messages, and pays the returned invoice through blinded payment paths. This issue tracks the progress towards that functionality. Original issue: https://github.com/lightningnetwork/lnd/issues/5594. I'll edit this issue to track more fine grained steps (the final architecture is still being worked on) and to link to corresponding PRs.\n\n### Milestones\n\n- [x] (A) **Codec**: `bolt12` package for messages and data structures ([PoC](https://github.com/bitromortac/lnd/tree/2604-bolt12-1))\n  - https://github.com/lightningnetwork/lnd/pull/10789\n  - https://github.com/lightningnetwork/lnd/pull/10832\n  - https://github.com/lightningnetwork/lnd/pull/10941\n  - https://github.com/lightningnetwork/lnd/pull/10958\n  - https://github.com/lightningnetwork/lnd/pull/11001\n  - https://github.com/lightningnetwork/lnd/pull/11061\n  - https://github.com/lightningnetwork/lnd/pull/11146\n  - https://github.com/lightningnetwork/lnd/pull/11237\n  - https://github.com/lightningnetwork/lnd/pull/11191\n- [ ] (B) **Receiver side**: offer store, invoice request handler\n  - https://github.com/lightningnetwork/lnd/pull/11278\n  - https://github.com/lightningnetwork/lnd/pull/11307\n  - multi: invoice request handler and flag gate\n  - multi: receiver dispatch, CreateOffer RPC and receiver itest\n- [ ] (C) **Sender side**: offer decoding, invoice request construction, payment dispatch\n- [ ] (D) **Multi-hop**: pathfinding, blinded path builder, handler upgrade\n- [ ] (E) **PayOffer**: safe payment dispatch\n- [ ] (F) **RPC parity**: BOLT 12 fields on existing invoice/payment RPCs\n\n### Design decisions worth knowing\n\n- **Stateless invoice settlement for DoS mitigation:** the receiver does not store invoices at creation time. A signed envelope in the blinded path carries enough data to reconstruct the invoice when the HTLC arrives, avoiding per-request DB writes.\n- **Invoice RPC backward compatibility:** the change is planned in such a way that Bolt12 invoices integrate into existing invoice RPCs, with additional Bolt12 specific fields. Hold invoices will not be supported initially.",
+          "url": "https://github.com/lightningnetwork/lnd/issues/10736",
+          "problemKey": "lightningnetwork/lnd#10736",
+          "platform": "GitHub",
+          "author": "bitromortac",
+          "isBot": false,
+          "publishedAt": "2026-04-16T13:31:59Z",
+          "updatedAt": "2026-10-09T16:30:13Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11305",
+      "title": "feature: convey required-output taproot metadata to the aux sweeper",
+      "reports": [
+        {
+          "id": "gh-issue-5776472957",
+          "projectId": "lightning-labs",
+          "title": "feature: convey required-output taproot metadata to the aux sweeper",
+          "summary": "(N.b., a supplementary issue following on lightninglabs/taproot-assets#2205, ctsy. Opus.)\n\n## Summary\n\nThe aux sweeper must account for every P2TR output of a sweep transaction: each one either carries an asset commitment or needs an exclusion proof, and building an exclusion proof requires the output's taproot internal key (and tapscript tree, if any).\n\nThe sweeper's batching deliberately mixes required-output inputs (pre-signed second-level HTLC outputs) with normal inputs. When a required output belongs to a channel the aux sweeper does not manage — a non-asset taproot channel force-closing alongside an asset channel, with deadline-matched HTLCs — the sweep transaction contains a P2TR output whose internal key and tapscript metadata the aux sweeper never learns. It cannot prove asset exclusion for that output, so it cannot produce valid proofs for any asset in the batch.\n\n## Current failure mode\n\nThe aux sweeper's only recourse is to refuse the batch by returning an error from `NotifyBroadcast`. That error becomes a `TxFailed` event, which marks the entire input set `PublishFailed` and reschedules it.  The same batch can then re-form and re-fail indefinitely because the retry path contains no mechanism to separate the offending input. The time-sensitive pre-signed HTLC inputs in the set stall with it, creating a real fund-loss mode if a claim misses its deadline.\n\nThe existing TODO in the fee bumper (\"find out which input is causing the failure and fail that one only\") points at the same gap, but even granular failure handling needs the callback to identify which output is unprovable.\n\n## Key observation\n\nThe missing metadata is not actually missing from the node. Required outputs come from the node's own channels, and the resolution-construction path computes the internal key and tapscript tree when it builds each second-level output. The current input and sweep interfaces retain only part of that information and do not propagate enough of it to the aux sweeper to construct an exclusion proof.\n\n## Proposed change\n\nCarry taproot metadata alongside each required output: the internal key plus sufficient typed tapscript preimages or leaves to prove that the tree contains no Taproot Asset commitment, or an equivalent ready-made exclusion witness. A tapscript merkle root alone is insufficient because it reconstructs the output key but does not prove what the tree contains.  Surface this metadata to the `AuxSweeper` at broadcast time, next to the existing `outpointToTxIndex` mapping in the `NotifyBroadcast` path.\n\nWith that in hand, the aux sweeper can emit tapscript exclusion proofs for foreign outputs, and mixed batches become fully provable. No co-batching restriction is needed, and the batching efficiency the sweeper was designed for is preserved.\n\n## Alternative considered\n\nForbidding co-batching structurally — never clustering inputs that carry resolution blobs with foreign required-output inputs — would also resolve the livelock, but gives up",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11305",
+          "problemKey": "lightningnetwork/lnd#11305",
+          "platform": "GitHub",
+          "author": "jtobin",
+          "isBot": false,
+          "publishedAt": "2026-10-09T10:14:22Z",
+          "updatedAt": "2026-10-09T10:14:22Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#10938",
+      "title": "itest flake: commit sweep resolver can remain unresolved after fee-bump/confirmation race",
+      "reports": [
+        {
+          "id": "gh-issue-4759223515",
+          "projectId": "lightning-labs",
+          "title": "itest flake: commit sweep resolver can remain unresolved after fee-bump/confirmation race",
+          "summary": "## Summary\n\nAn itest flake suggests `commitSweepResolver` can remain unresolved when the fee bumper tries to fee bump/RBF a sweep transaction at roughly the same time that the original sweep transaction confirms.\n\nIn that case, the replacement attempt can fail with `ErrInputMissing` because the input was already spent by our own confirmed sweep tx. If this is surfaced as a fatal sweep failure before the confirmation/spend path catches up, `commitSweepResolver` returns an error without marking itself resolved. The channel arbitrator then exits the resolver goroutine, leaving the force-close pending.\n\nThis does not appear to be a forward-interceptor settlement failure. The on-chain HTLC settlement/payment path completed; the cleanup got stuck because Alice's commit sweep resolver did not clear.\n\n## CI Failure\n\n- Run: https://github.com/lightningnetwork/lnd/actions/runs/28254644054\n- Job: https://github.com/lightningnetwork/lnd/actions/runs/28254644054/job/83714511078?pr=10933\n- Test: `TestLightningNetworkDaemon/tranche05/166-of-260/btcd/forward_interceptor_on_chain_settle_after_restart`\n- Platform/backend: Windows, `btcd`\n\nFailure:\n\n```text\nexpected num of pending force close channel to be zero\nAlice: assert force close resolved timeout\n```\n\nThe later \"too many blocks mined\" assertion was secondary:\n\n```text\nError: \"68\" is not less than or equal to \"50\"\nMessages: cannot mine more than 50 blocks in one test\n```\n\n`CleanupForceClose(alice)` kept mining because Alice's force-close channel never cleared from `PendingChannels`.\n\n## Observed Chain/Log Sequence\n\nAlice force-close tx:\n\n```text\n21ca75e8f4d1cbe8ef10bba01c09c6a4b2f8c004457cbda5043f8fe59db166e7\n```\n\nAlice's delayed local commit output:\n\n```text\n21ca75e8...:1\n```\n\nAlice's sweep tx for that output:\n\n```text\n97134fdd9ed0ca9564e191aa66357d2ab3ea81ddba1ffaa41f9eaaef22119409\n```\n\nThe sweep tx was accepted, mined, and Alice's wallet observed it mined in block 479. Alice's tx notifier also detected the spend of `21ca75e8...:1` by `97134fdd...` and later dispatched the confirmation notification.\n\nAround the same time, the fee bump path attempted to handle/bump the sweep and logged:\n\n```text\nFail to fee bump tx 97134fdd...: input no longer exists\nFailing record=1: found orphan inputs: 21ca75e8...:1 (CommitmentTimeLock)\nFailed to sweep input: 21ca75e8...:1 (CommitmentTimeLock), error: input no longer exists\ncommitSweepResolver(...:1): unable to sweep input: input no longer exists\n```\n\nAfter this, Alice's channel arbitrator remained in:\n\n```text\nStateWaitingFullResolution\n```\n\nThe logs then repeatedly showed the arbitrator skipping close-event reads in that state and skipping the already-resolved HTLC resolver, but the commit sweep resolver did not complete.\n\n## Suspected Race\n\nThe relevant race appears to be:\n\n```text\n1. TxPublisher publishes sweep tx A for the commit output.\n2. tx A confirms.\n3. Around the same block-processing window, TxPublisher still processes the monitor record as fee-bumpable.\n4. It",
+          "url": "https://github.com/lightningnetwork/lnd/issues/10938",
+          "problemKey": "lightningnetwork/lnd#10938",
+          "platform": "GitHub",
+          "author": "ziggie1984",
+          "isBot": false,
+          "publishedAt": "2026-06-27T17:09:12Z",
+          "updatedAt": "2026-10-09T07:10:47Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#5625",
+      "title": "lnd should exit with no-success error code when automatically shut down due to bitcoind problems",
+      "reports": [
+        {
+          "id": "gh-issue-968520035",
+          "projectId": "lightning-labs",
+          "title": "lnd should exit with no-success error code when automatically shut down due to bitcoind problems",
+          "summary": "### Background\r\n\r\nWhile troubleshooting `tor` & `bitcoind` issues, I've restarted `bitcoind` two times in a row, and discovered (just accidentally, as I have `bitcoind` and `lnd` logs tailed in the same `tmux` split screen) that `lnd` is shutting itself down:\r\n\r\n```\r\nAug 12 12:55:25 odroid-hc1 lnd[5606]: 2021-08-12 12:55:25.120 [ERR] NTFN: Unable to fetch block header: Post \"http://127.0.0.1:8332\": dial tcp 127.0.0.1:8332: connect: connection refused\r\nAug 12 12:55:25 odroid-hc1 lnd[5606]: 2021-08-12 12:55:25.304 [INF] CRTR: Pruning channel graph using block 0000000000000000000c7620d7807edfad1c475f204f5c17da4601e2a6e13945 (height=695396)\r\nAug 12 12:55:37 odroid-hc1 lnd[5606]: 2021-08-12 12:55:37.500 [INF] DISC: GossipSyncer(02ad6fb8d693dc1e4569bcedefadf5f72a931ae027dc0f0c544b34c1c6f3b9a02b): applying gossipFilter(start=0001-01-01 00:00:00 +0000 UTC, end=0001-01-01 00:00:00 +0000 UTC)\r\nAug 12 12:55:37 odroid-hc1 lnd[5606]: 2021-08-12 12:55:37.501 [INF] DISC: GossipSyncer(036d2ac71176151db04fdac839a0ddea9f3a584f6c23bb0b4ac72c323124ec506b): applying gossipFilter(start=2021-08-12 12:55:37.501421413 +0300 EEST m=+1873248.185437149, end=2157-09-18 19:23:52.501421413 +0300 EEST)\r\nAug 12 12:56:21 odroid-hc1 lnd[5606]: 2021-08-12 12:56:21.460 [INF] HLCK: Health check: chain backend, call: 2 failed with: -28: Verifying blocks..., backing off for: 2m0s\r\nAug 12 12:56:37 odroid-hc1 lnd[5606]: 2021-08-12 12:56:37.501 [INF] DISC: Broadcasting 49 new announcements in 5 sub batches\r\nAug 12 12:58:21 odroid-hc1 lnd[5606]: 2021-08-12 12:58:21.476 [CRT] SRVR: Health check: chain backend failed after 3 calls\r\nAug 12 12:58:21 odroid-hc1 lnd[5606]: 2021-08-12 12:58:21.476 [INF] SRVR: Sending request for shutdown\r\nAug 12 12:58:21 odroid-hc1 lnd[5606]: 2021-08-12 12:58:21.516 [INF] LTND: Received shutdown request.\r\nAug 12 12:58:21 odroid-hc1 lnd[5606]: 2021-08-12 12:58:21.517 [INF] LTND: Shutting down...\r\nAug 12 12:58:21 odroid-hc1 lnd[5606]: 2021-08-12 12:58:21.517 [INF] LTND: Gracefully shutting down.\r\n...\r\nAug 12 12:59:58 odroid-hc1 lnd[5606]: 2021-08-12 12:59:58.385 [INF] LTND: Shutdown complete\r\nAug 12 12:59:58 odroid-hc1 systemd[1]: lnd.service: Succeeded.\r\n```\r\n\r\n`systemctl status` now is:\r\n```\r\n   Loaded: loaded (/etc/systemd/system/lnd.service; enabled; vendor preset: enabled)\r\n   Active: inactive (dead) since Thu 2021-08-12 12:59:58 EEST; 9min ago\r\n  Process: 5587 ExecStartPre=/usr/local/bin/lndcache.sh (code=exited, status=0/SUCCESS)\r\n  Process: 5606 ExecStart=/home/lnd/lnd.go/bin/lnd --profile=9000 (code=exited, status=0/SUCCESS)\r\n Main PID: 5606 (code=exited, status=0/SUCCESS)\r\n```\r\nSo it has `SUCCESS` status, meaning `systemd` will not restart `lnd` in case of this bail out, even if I have `Restart=on-failure`, as this was not reported as failure. This is risk for \"silently\" losing lightning functionality...\r\n\r\n### Your environment\r\n\r\n* `v0.13.1-beta`\r\n* `Linux odroid-hc1 4.19.0-17-armmp-lpae #1 SMP Debian 4.19.194-3 (2021-07-18) armv7l GNU/Linux`\r\n* `v0.21.1",
+          "url": "https://github.com/lightningnetwork/lnd/issues/5625",
+          "problemKey": "lightningnetwork/lnd#5625",
+          "platform": "GitHub",
+          "author": "Talkless",
+          "isBot": false,
+          "publishedAt": "2021-08-12T10:16:54Z",
+          "updatedAt": "2026-10-09T01:26:56Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11289",
+      "title": "postgres nodes with \"many\" on chain transactions are very slow",
+      "reports": [
+        {
+          "id": "gh-issue-5666392599",
+          "projectId": "lightning-labs",
+          "title": "postgres nodes with \"many\" on chain transactions are very slow",
+          "summary": "I'm getting slow performance on postgres nodes with \"many\" on chain transactions. For example:\n\n```\nfrank-7658f6fcd6-fkvlw:/$ echo \"utxos: $(lncli listunspent | jq '.utxos | length')\"\nutxos: 230\nfrank-7658f6fcd6-fkvlw:/$ echo \"txns:  $(lncli listchaintxns | jq '.transactions | length')\"\ntxns:  357\nfrank-7658f6fcd6-fkvlw:/$ time lncli walletbalance\n{\n    \"total_balance\":  \"386766785\",\n    \"confirmed_balance\":  \"386766785\",\n    \"unconfirmed_balance\":  \"0\",\n    \"locked_balance\":  \"0\",\n    \"reserved_balance_anchor_chan\":  \"50000\",\n    \"account_balance\":  {\n        \"default\":  {\n            \"confirmed_balance\":  \"386766785\",\n            \"unconfirmed_balance\":  \"0\"\n        }\n    }\n}\n\nreal\t0m13.934s\nuser\t0m0.027s\nsys\t0m0.023s\nfrank-7658f6fcd6-fkvlw:/$ \n```\nThis is **way** too slow and makes metrics scraping with lndmon time out.\n\nBehavior seems the same on both v0.20.5 and v0.21.4\n\nI have `db_use_native_sql: \"true\"`\n\n\nHere is my postgres config:\n\n```\n$ kubectl describe -n smokenet-dev2 cluster\nName:         cnpg-cluster\nNamespace:    smokenet-dev2\nLabels:       app.kubernetes.io/managed-by=Helm\nAnnotations:  meta.helm.sh/release-name: smokenet-dev\n              meta.helm.sh/release-namespace: smokenet-dev2\nAPI Version:  postgresql.cnpg.io/v1\nKind:         Cluster\nMetadata:\n  Creation Timestamp:  2026-09-18T22:11:59Z\n  Generation:          1\n  Resource Version:    126832190\n  UID:                 5ab3fef9-6701-427f-9753-55bbaa6250a9\nSpec:\n  Affinity:\n    Pod Anti Affinity Type:  preferred\n  Backup:\n    Target:  prefer-standby\n    Volume Snapshot:\n      Online:  true\n      Online Configuration:\n        Immediate Checkpoint:    false\n        Wait For Archive:        true\n      Snapshot Owner Reference:  none\n  Bootstrap:\n    Initdb:\n      Database:             app\n      Encoding:             UTF8\n      Locale C Type:        C\n      Locale Collate:       C\n      Owner:                app\n  Enable PDB:               true\n  Enable Superuser Access:  false\n  Failover Delay:           0\n  Image Name:               ghcr.io/cloudnative-pg/postgresql:16.4\n  Instances:                1\n  Log Level:                info\n  Managed:\n    Roles:\n      Connection Limit:  -1\n      Ensure:            present\n      Inherit:           true\n      Login:             true\n      Name:              frank-db-postgres-user\n      Password Secret:\n        Name:            frank-db-postgres-credentials\n      Connection Limit:  -1\n      Ensure:            present\n      Inherit:           true\n      Login:             true\n      Name:              george-db-postgres-user\n      Password Secret:\n        Name:            george-db-postgres-credentials\n      Connection Limit:  -1\n      Ensure:            present\n      Inherit:           true\n      Login:             true\n      Name:              henry-db-postgres-user\n      Password Secret:\n        Name:            henry-db-postgres-credentials\n      Connection Limit:  -1\n      Ensure:            present\n      Inherit:           true\n      L",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11289",
+          "problemKey": "lightningnetwork/lnd#11289",
+          "platform": "GitHub",
+          "author": "ZZiigguurraatt",
+          "isBot": false,
+          "publishedAt": "2026-10-01T17:32:12Z",
+          "updatedAt": "2026-10-08T14:49:51Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11211",
+      "title": "[bug]: fixed-width node announcement address decoders accept short reads",
+      "reports": [
+        {
+          "id": "gh-issue-5518524754",
+          "projectId": "lightning-labs",
+          "title": "[bug]: fixed-width node announcement address decoders accept short reads",
+          "summary": "## Environment\n\n- LND version: upstream `master` at `88959aec3d7a9d11a509714d9bee97c29ee02269` (2026-09-18)\n- Backend version: N/A\n- OS/Distribution: N/A\n- Configuration: N/A; this reproduces in `lnwire` unit tests\n\n## Bug Details & Steps to Reproduce\n\nThe IPv4, IPv6, and Tor v3 address TLV decoders use `io.Reader.Read` for fixed-width fields and do not verify that the requested number of bytes was returned.\n\nA conforming reader may return `(n < len(buf), nil)`. The decoder then interprets the unread zero-filled bytes as part of the address.\n\nMinimal examples:\n\n- IPv4: 5 bytes supplied for a 6-byte record\n- IPv6: 17 bytes supplied for an 18-byte record\n- Tor v3: `tor.V3DecodedLen+1` bytes supplied for a `tor.V3DecodedLen+2` record\n\nThe existing implementation accepts each input and returns an address.\n\n## Expected Behavior\n\nA fixed-width address field should be read completely. Truncated input should return an error.\n\nA reader that legitimately returns data in small fragments should still decode successfully when the complete record is available.\n\n## Proposed Fix\n\nReplace the six fixed-width `Read` calls in `lnwire/node_announcement_2.go` with `io.ReadFull`.\n\nThe proposed change is limited to decoder correctness. It does not change the TLV format or reject any complete valid record.\n\n## Tests\n\nRegression coverage includes:\n\n- truncated IPv4, IPv6, and Tor v3 records are rejected;\n- two complete addresses decode successfully;\n- complete records decode through `iotest.OneByteReader`;\n- focused fuzz targets continue to pass.\n\nThis is reported as a parser correctness issue. I have not confirmed a network-wide gossip impact or a separate live security exploit.\n",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11211",
+          "problemKey": "lightningnetwork/lnd#11211",
+          "platform": "GitHub",
+          "author": "s1ns3nz0",
+          "isBot": false,
+          "publishedAt": "2026-09-20T14:50:09Z",
+          "updatedAt": "2026-10-07T13:31:32Z",
+          "status": "closed",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11259",
+      "title": "Channel-open race with latent nil dereference",
+      "reports": [
+        {
+          "id": "gh-issue-5571318214",
+          "projectId": "lightning-labs",
+          "title": "Channel-open race with latent nil dereference",
+          "summary": "Two goroutines on the channel-opening path work on **different copies** of the same `OpenChannel`.  If they interleave in the wrong order, a nil dereference occurs.\n\n**This does not reproduce on a stock LND.**  It's a real latent bug but not a current DoS concern.  The reproducer inserts a sleep into LND's code, extending the race window to demonstrate the bug.\n\n## Summary\n\nA peer opens a channel and, before the funding transaction confirms, sends `channel_ready` followed by an `update_add_htlc` / `commitment_signed` pair.  LND queues all three internally.  When the funding transaction confirms, the funding goroutine reads pending commitment state from the database while holding a copy of the channel that was never refreshed, and whose `RemoteNextRevocation` is nil.  If a link has been spawned and has processed the `update_add_htlc` and `commitment_signed` by the time that read happens, it finds a commit diff, takes a branch that dereferences the nil, and the process dies.\n\n## Root cause\n\nThe race and nil dereference happen in [`restoreCommitState`](https://github.com/lightningnetwork/lnd/blob/2eac3317fbedabc887bd7c78aa9913eec294e1cd/lnwallet/channel.go#L1546-L1572):\n\n```go\npendingRemoteCommitDiff, err = lc.channelState.RemoteCommitChainTip()  // DB read\nif err != nil && err != channeldb.ErrNoPendingCommit {\n    return err\n}\nif pendingRemoteCommitDiff != nil {\n    pendingCommitPoint := lc.channelState.RemoteNextRevocation         // IN-MEMORY field\n    ...\n    pendingRemoteKeyChain = DeriveCommitmentKeys(pendingCommitPoint, ...)  // no nil check\n}\n```\n\n\"Is there a pending commitment?\" is read from the database.  \"What is the peer's next revocation point?\" is read from the in-memory struct.\n\nOn a normal channel-open flow, the in-memory `RemoteNextRevocation` is always nil, and a nil-dereference *would* occur if the `pendingRemoteCommitDiff != nil` block ever ran.  But that block doesn't run because `RemoteCommitChainTip()` always returns `ErrNoPendingCommit`.  This makes perfect sense because we can't have a pending commit if the channel isn't fully open yet.\n\n... or can we?\n\n### Why the in-memory field stays nil\n\nWhen LND processes the `channel_ready` it does record the revocation point, but it's done in the goroutine that handles `channel_ready`, not the funding goroutine that runs the code above.  The funding goroutine's in-memory copy of the channel remains stale with a nil `RemoteNextRevocation`.\n\nSo everything hinges on the `RemoteCommitChainTip()` DB lookup that guards the nil dereference.\n\n### The two goroutines that touch the DB entry\n\n- **The funding goroutine.**  This is the goroutine that runs the above code once the funding transaction confirms.  Note that `discoverySignal` is closed several frames deeper than the vulnerable read, and execution then returns and continues:\n  ```\n  advanceFundingState\n    advancePendingChannelState\n      handleFundingConfirmation\n        close(discoverySignal)\n    NewLightningChannel\n      restoreCommit",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11259",
+          "problemKey": "lightningnetwork/lnd#11259",
+          "platform": "GitHub",
+          "author": "morehouse",
+          "isBot": false,
+          "publishedAt": "2026-09-24T16:22:13Z",
+          "updatedAt": "2026-10-07T01:51:59Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11296",
+      "title": "[bug]: link fails on adds that do NOT exceed the max fee exposure limit",
+      "reports": [
+        {
+          "id": "gh-issue-5729734123",
+          "projectId": "lightning-labs",
+          "title": "[bug]: link fails on adds that do NOT exceed the max fee exposure limit",
+          "summary": "### Pre-Submission Checklist\n\n- [x] I have searched the existing issues and believe this is a new bug.\n- [x] I am not asking a question about how to use lnd, but reporting a bug (otherwise open a discussion).\n\n### LND Version\n\nlnd master at f3a8f4e8a; behaviour present since v0.18.3-beta (#8824).\n\n### Bug Details & Steps to Reproduce\n\n### Background\nFound with the link FSM fuzz harness in #10865.\n\nSince #8824 (v0.18.3-beta), the link fails when the peer sends an `update_add_htlc` that would push it over its max fee exposure (`processRemoteUpdateAddHTLC` → `isOverexposedWithHtlc(msg, true)`). `sample-lnd.conf` documents that this can happen with a tight `channel-max-fee-exposure`, when the peer proposes an update that exceeds the limit.\n\nThis report is about a narrower case: the link also fails on adds that do **not** exceed the limit. The receiver's dust sum still includes dust HTLCs whose removal is already locked into both commitments, so it overestimates its exposure, while the sender, counting correctly, sees the add as within the limit and has no way to predict the failure.\n\n### Root cause\n\n`LightningChannel.GetDustSum` sums every `Add` still in the update logs, without checking whether a settle or fail has already removed it. Adds are only dropped from the logs by `compactLogs`, which runs in `ReceiveRevocation`. The side that resolves an HTLC sends the fail/settle and a `commitment_signed` for the peer's commitment. The peer's `revoke_and_ack` arrives while the resolver's own commitment still holds the HTLC, since that only changes with the peer's `commitment_signed` that follows, so this revocation can't compact the add. The resolver then revokes, but receives no further revocation that round, so the resolved add stays in its logs, and counts as dust, until the next round. The peer received that last revocation and has already compacted, so it counts the HTLC as gone.\n\nThe over-count itself is deliberate and documented (\"NOTE: This over-estimates the dust exposure\", #5770), and `TestChannelGetDustSum` pins it (\"Alice will see Bob as having the original dust sum since compactLogs hasn't been called\"). It was harmless while an over-exposed HTLC was only failed back; since #8824 it fails the link on the receiving side, where the sender's accurate check (`handleDownstreamUpdateAdd` → `isOverexposedWithHtlc(htlc, false)`) has already passed.\n\n### Steps to reproduce\n\nThe asymmetry, in `lnwallet` (drop into the package and run `go test ./lnwallet -run TestDustSumCountsResolvedHTLC`):\n\n```go\nfunc TestDustSumCountsResolvedHTLC(t *testing.T) {\n\talice, bob, err := CreateTestChannels(\n\t\tt, channeldb.SingleFunderTweaklessBit,\n\t)\n\trequire.NoError(t, err)\n\n\tdustSum := func(c *LightningChannel,\n\t\twhose lntypes.ChannelParty) lnwire.MilliSatoshi {\n\n\t\treturn c.GetDustSum(whose, fn.None[chainfee.SatPerKWeight]())\n\t}\n\n\t// Bob offers Alice a dust HTLC and both lock it in.\n\thtlc, _ := createHTLC(0, lnwire.NewMSatFromSatoshis(1_000))\n\taddAndReceiveHTLC(t, bob, a",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11296",
+          "problemKey": "lightningnetwork/lnd#11296",
+          "platform": "GitHub",
+          "author": "MPins",
+          "isBot": false,
+          "publishedAt": "2026-10-06T14:02:41Z",
+          "updatedAt": "2026-10-06T14:04:35Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11182",
+      "title": "[bug]: Force-close recovery can remain in waiting_close after restart despite sufficient confirmations",
+      "reports": [
+        {
+          "id": "gh-issue-5391309405",
+          "projectId": "lightning-labs",
+          "title": "[bug]: Force-close recovery can remain in waiting_close after restart despite sufficient confirmations",
+          "summary": "### Pre-Submission Checklist\n\n- [x] I have searched the existing issues and believe this is a new bug.\n- [x] I am not asking a question about how to use lnd, but reporting a bug (otherwise open a discussion).\n\n### LND Version\n\nv0.21.2-beta Commit: 29257ecc8892af0c882fa627b66a556190c84fd9\n\n### LND Configuration\n\nRelevant settings:\nbitcoin.signet=true\nbitcoin.node=bitcoind\ndb.backend=sqlite\ndb.use-native-sql=true\n\nPrivate Taproot channels. No pending HTLCs in the controlled restart test. Peer connections use Tor.\n\n### Backend Version\n\nBitcoin Core 29.3\n\n### Backend Configuration\n\nPublic Signet, pruning enabled, no transaction index.\n\nThe closing block remained available locally. Bitcoin Core stayed running during the controlled LND stop/start.\n\n### OS/Distribution\n\nDebian 13 amd64, native systemd services.\n\n### Bug Details & Steps to Reproduce\n\nAfter a force close and graceful LND restart, the closing transaction had sufficient confirmations, but the channel remained in waiting_close_channels and its main local commitment output was not registered for sweeping.\n\nObserved sequence on a two-node Signet setup:\n\n1. Force-close a private Taproot channel.\n2. Wait until LND recognizes the first confirmation at height H.\n3. Gracefully stop LND before its three-confirmation notification is delivered. Leave Bitcoin Core running.\n4. Let Core reach H+4, then start and unlock LND. Wait for synchronization.\n5. After additional blocks, inspect lncli pendingchannels and lncli wallet pendingsweeps.\n\nAt H+6, the channel still appeared in waiting_close_channels with close_height=H and blocks_til_close_confirmed=0. Anchor sweep candidates were present, but the main local commitment output was absent.\n\nA separate force close on the same node, without restarting during confirmation, advanced to pending_force_closing_channels after three confirmations and registered its main output for sweeping. That registration survived the subsequent restart.\n\nThe live failure may depend on startup registration order. The attached component test controls that order deterministically. We have not demonstrated permanent loss of funds.\n\nPossibly related to #8120, #9532, and #10351. I could not establish whether these share the same underlying cause. Please redirect this report if the attached reproduction belongs under an existing issue.\n\n### Expected Behavior\n\nLND should recognize the historical confirmation after restart and advance the channel into force-close recovery once its confirmation threshold is met.\n\nSweeping may still wait for the output's normal maturity.\n\n### Debug Information\n\nThe observed restart sequence, summarized without host or transaction identifiers:\n\n- A six-confirmation subscription starts its lookup at H+4.\n- Historical spend lookup finds the closing transaction at H.\n- The three-confirmation watcher uses the later hint/search and misses that historical confirmation.\n\nSuspected mechanism: TxNotifier.RegisterConf shares searches for the same transaction/script. ",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11182",
+          "problemKey": "lightningnetwork/lnd#11182",
+          "platform": "GitHub",
+          "author": "ripsline",
+          "isBot": false,
+          "publishedAt": "2026-09-08T19:59:26Z",
+          "updatedAt": "2026-10-05T22:06:36Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "lightning-labs",
+      "problemKey": "lightningnetwork/lnd#11295",
+      "title": "[bug]: Known TLV records in lnwire decode with the wrong length and shift the stream",
+      "reports": [
+        {
+          "id": "gh-issue-5717371974",
+          "projectId": "lightning-labs",
+          "title": "[bug]: Known TLV records in lnwire decode with the wrong length and shift the stream",
+          "summary": "## Description\n\nThe lnwire TLV stream decoder calls each known record's decoder with the\ndeclared `length` but does not check that the decoder consumed exactly\n`length` bytes. Three record decoders consume a different number of bytes than\nthe record declares:\n\n* `MilliSatoshi` (`lnwire/msat.go:76-92`, `decodeMilliSatoshis`) calls\n  `tlv.DBigSize`, which reads one BigSize value and ignores `l`.\n  `tlv/record.go:276-293` (`MakeBigSizeRecord`) behaves the same for\n  `BigSizeT` records. This affects `channel_update_2` types 12 and 14,\n  `dyn_commit` types 2 and 4, and `dyn_propose` types 2 and 4.\n* `Color` (`lnwire/node_announcement_2.go:346-352`, `rgbDecoder`) always reads\n  3 bytes regardless of `l`.\n* `TrueBoolean` (`lnwire/channel_update_2.go:457-466`, `booleanDecoder`)\n  returns success for `l == 0 || l == 1` and never reads the reader.\n\n`tlv/stream.go:238-250` continues at the reader's actual position after the\ndecoder returns, so any byte the decoder did not consume is reparsed as the\nnext record's type. A message that BOLT 1 requires the receiver to fail to\nparse instead decodes as a different message.\n\nThe fixed-size primitive decoders check the declared length themselves.\nExisting length-validation tests cover those decoders and cannot reach the\nthree decoders above. The `MilliSatoshi` and `BigSizeT` decoders read\nvariable-length values from `lnwire/msat.go` and the `tlv` primitive and\nignore the record length, and the `Color` and `TrueBoolean` decoders live in\nthe two gossip-v2 message files, so length validation remains incomplete for\nall four messages listed below.\n\n## Steps to reproduce\n\nEach input below is a complete message in hex.\n\n```\n010d0102010203        node_announcement_2, Color length 2\n010d01040102030421abababababababababababababababababababababababababababababababab\n                      node_announcement_2, Color length 4, then NodeID record\n010f0c03010d00        channel_update_2, MilliSatoshi length 3\n010f08010a020001      channel_update_2, TrueBoolean length 1, then CLTV record\n```\n\n```go\npackage main\n\nimport (\n\t\"bytes\"\n\t\"encoding/hex\"\n\t\"fmt\"\n\n\t\"github.com/lightningnetwork/lnd/lnwire\"\n)\n\nfunc main() {\n\tinputs := []string{\n\t\t\"010d0102010203\",\n\t\t\"010f0c03010d00\",\n\t\t\"010f08010a020001\",\n\t}\n\tfor _, in := range inputs {\n\t\tb, _ := hex.DecodeString(in)\n\t\tmsg, err := lnwire.ReadMessage(bytes.NewReader(b), 0)\n\t\tfmt.Printf(\"%s err=%v msg=%T\\n\", in, err, msg)\n\t}\n}\n```\n\nObserved:\n\n```\n010d0102010203 err=<nil> msg=*lnwire.NodeAnnouncement2\n010f0c03010d00 err=<nil> msg=*lnwire.ChannelUpdate2\n010f08010a020001 err=<nil> msg=*lnwire.ChannelUpdate2\n```\n\nAll three malformed messages decode without error. In the first input the\nColor record declares length 2, the decoder consumes 3 bytes, and the stream\nstill ends clean. In the second and third inputs the decoder consumes fewer\nbytes than declared, and the leftover bytes are parsed as further TLV records\n(type 4 NodeID with length 0x21, type 10 CLTV with length 2).\n\n## Expected behavior\n\nBOLT ",
+          "url": "https://github.com/lightningnetwork/lnd/issues/11295",
+          "problemKey": "lightningnetwork/lnd#11295",
+          "platform": "GitHub",
+          "author": "Nuhiat-Arefin",
+          "isBot": false,
+          "publishedAt": "2026-10-05T18:51:30Z",
+          "updatedAt": "2026-10-05T18:52:55Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#7721",
+      "title": "[Flaky Test] tests::nakamoto_integrations::follower_bootup_across_multiple_cycles",
+      "reports": [
+        {
+          "id": "gh-issue-5798688458",
+          "projectId": "stacks",
+          "title": "[Flaky Test] tests::nakamoto_integrations::follower_bootup_across_multiple_cycles",
+          "summary": "The following test looks flaky: `tests::nakamoto_integrations::follower_bootup_across_multiple_cycles`.\n\n> Filed automatically by `Tests: Flaky Scan Nightly`.\n\n<!-- test-id: tests::nakamoto_integrations::follower_bootup_across_multiple_cycles -->\n",
+          "url": "https://github.com/stacks-network/stacks-core/issues/7721",
+          "problemKey": "stacks-network/stacks-core#7721",
+          "platform": "GitHub",
+          "author": "github-actions[bot]",
+          "isBot": true,
+          "publishedAt": "2026-10-11T06:41:02Z",
+          "updatedAt": "2026-10-11T06:41:03Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#7713",
+      "title": "at-block reads the base tip during block replay and tx simulate",
+      "reports": [
+        {
+          "id": "gh-issue-5771939009",
+          "projectId": "stacks",
+          "title": "at-block reads the base tip during block replay and tx simulate",
+          "summary": "`EphemeralMarfStore::set_block_hash` checks that the target block is an ancestor but never moves `read_only_marf` to it, so reads inside `at-block` resolve at the base tip instead of the named block. This affects `/v3/blocks/replay` and `/v3/transactions/simulate`; mining and block processing don't use this store.\n\nhttps://github.com/stacks-network/stacks-core/blob/7e9da226852dc4345a4b6031b356b5435b8cce2f/stackslib/src/clarity_vm/database/ephemeral.rs#L393-L414\n\nSeen on mainnet: replaying blocks that call `SP804CDG3KBN9M6E00AD744K8DC697G7HBCG520Q.sbtc-yield-rewards-v3` (e.g. 1113075) prints a balance of `u0` where the canonical block printed `u3243877`.\n\nRepro: a contract that prints `(at-block <id of height - 3> (var-get counter))`, replayed with the existing ephemeral replay test helper. Canonical prints `(counter u10) (height u23)`, replay prints `(counter u13) (height u25)`. The existing test only uses `at-block` on the parent, which is the base tip, so it passes.\n",
+          "url": "https://github.com/stacks-network/stacks-core/issues/7713",
+          "problemKey": "stacks-network/stacks-core#7713",
+          "platform": "GitHub",
+          "author": "ryanwaits",
+          "isBot": false,
+          "publishedAt": "2026-10-09T02:45:04Z",
+          "updatedAt": "2026-10-09T02:52:50Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 1,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#6408",
+      "title": "cleanup: remove deprecated `helium` logic",
+      "reports": [
+        {
+          "id": "gh-issue-3340503361",
+          "projectId": "stacks",
+          "title": "cleanup: remove deprecated `helium` logic",
+          "summary": "The codebase still contains logic related to `helium`, which has been deprecated.\n\nIt has been confirmed that Hiro (the only known user of the helium network) was using it for API integration tests. However, these tests relied on an outdated Stacks image, and Hiro will need to rewrite them regardless.\n\nGiven this, we can safely remove all `helium`-related logic from the codebase.\n",
+          "url": "https://github.com/stacks-network/stacks-core/issues/6408",
+          "problemKey": "stacks-network/stacks-core#6408",
+          "platform": "GitHub",
+          "author": "fdefelici",
+          "isBot": false,
+          "publishedAt": "2025-08-21T06:45:54Z",
+          "updatedAt": "2026-10-08T09:53:27Z",
+          "status": "closed",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#6553",
+      "title": "[chore] remove mocknet from stacks-core",
+      "reports": [
+        {
+          "id": "gh-issue-3473942169",
+          "projectId": "stacks",
+          "title": "[chore] remove mocknet from stacks-core",
+          "summary": "`mocknet` network mode is no longer viable after epoch 3. \n\nrecommendation is to remove this network mode entirely, and default to using something like clarinet or a private testnet. \n\ncc @dhaney-stacks @hstove @jcnelson @rdeioris ",
+          "url": "https://github.com/stacks-network/stacks-core/issues/6553",
+          "problemKey": "stacks-network/stacks-core#6553",
+          "platform": "GitHub",
+          "author": "wileyj",
+          "isBot": false,
+          "publishedAt": "2025-10-01T14:50:23Z",
+          "updatedAt": "2026-10-07T11:09:40Z",
+          "status": "closed",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#6362",
+      "title": "cleanup: remove `BurnchainConfig::rpc_ssl` configuration",
+      "reports": [
+        {
+          "id": "gh-issue-3310005478",
+          "projectId": "stacks",
+          "title": "cleanup: remove `BurnchainConfig::rpc_ssl` configuration",
+          "summary": "As discussed here: https://github.com/stacks-network/stacks-core/pull/6329#discussion_r2231706087, it seems that `BurnchainConfig::rpc_ssl` is no longer used, so we could take the chance of remove it.",
+          "url": "https://github.com/stacks-network/stacks-core/issues/6362",
+          "problemKey": "stacks-network/stacks-core#6362",
+          "platform": "GitHub",
+          "author": "fdefelici",
+          "isBot": false,
+          "publishedAt": "2025-08-11T13:14:01Z",
+          "updatedAt": "2026-10-07T06:44:42Z",
+          "status": "closed",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#7686",
+      "title": "[Flaky Test] tests::nakamoto_integrations::test_tenure_extend_from_flashblocks",
+      "reports": [
+        {
+          "id": "gh-issue-5642213482",
+          "projectId": "stacks",
+          "title": "[Flaky Test] tests::nakamoto_integrations::test_tenure_extend_from_flashblocks",
+          "summary": "The following test looks flaky: `tests::nakamoto_integrations::test_tenure_extend_from_flashblocks`.\n\n> Filed automatically by `Tests: Flaky Scan Nightly`.\n\n<!-- test-id: tests::nakamoto_integrations::test_tenure_extend_from_flashblocks -->\n",
+          "url": "https://github.com/stacks-network/stacks-core/issues/7686",
+          "problemKey": "stacks-network/stacks-core#7686",
+          "platform": "GitHub",
+          "author": "github-actions[bot]",
+          "isBot": true,
+          "publishedAt": "2026-09-30T06:42:51Z",
+          "updatedAt": "2026-10-06T12:28:04Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    },
+    {
+      "projectId": "stacks",
+      "problemKey": "stacks-network/stacks-core#7705",
+      "title": "[Flaky Test] tests::signer::v0::tenure_extend::new_tenure_no_winner_while_proposing_block_then_ignored",
+      "reports": [
+        {
+          "id": "gh-issue-5707740934",
+          "projectId": "stacks",
+          "title": "[Flaky Test] tests::signer::v0::tenure_extend::new_tenure_no_winner_while_proposing_block_then_ignored",
+          "summary": "The following test looks flaky: `tests::signer::v0::tenure_extend::new_tenure_no_winner_while_proposing_block_then_ignored`.\n\n> Filed automatically by `Tests: Flaky Scan Nightly`.\n\n<!-- test-id: tests::signer::v0::tenure_extend::new_tenure_no_winner_while_proposing_block_then_ignored -->\n",
+          "url": "https://github.com/stacks-network/stacks-core/issues/7705",
+          "problemKey": "stacks-network/stacks-core#7705",
+          "platform": "GitHub",
+          "author": "github-actions[bot]",
+          "isBot": true,
+          "publishedAt": "2026-10-05T06:54:26Z",
+          "updatedAt": "2026-10-06T06:42:53Z",
+          "status": "open",
+          "reproduction": "not_verified",
+          "teamResponse": "未自动核查评论；Issue 关闭不等于独立验证修复",
+          "evidence": "user_report"
+        }
+      ],
+      "independent24h": 0,
+      "independent7d": 0,
+      "sampleNote": "按平台账号去重，跨平台身份未核验；样本不代表所有用户"
+    }
+  ],
+  "markets": [
+    {
+      "assetId": "stx-native",
+      "projectId": "stacks",
+      "symbol": "STX",
+      "network": "Stacks mainnet",
+      "usd": null,
+      "sats": null,
+      "quotedAt": "2026-10-12T16:02:57.000Z",
+      "btcQuotedAt": "2026-10-12T16:02:57.000Z",
+      "collectedAt": "2026-10-12T16:03:10Z",
+      "originalQuoteCurrency": "USD",
+      "provider": "CoinGecko aggregated spot",
+      "url": "https://www.coingecko.com/en/coins/blockstack",
+      "apiUrl": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin%2Cblockstack&sparkline=false",
+      "volume24hUsd": null,
+      "volumeWindow": "provider rolling 24h at quotedAt",
+      "returns": {
+        "24h": {
+          "usd": 1.5533274004917663,
+          "relativeBtc": 2.8645337170799534,
+          "reason": null,
+          "endpoints": {
+            "asset": [
+              {
+                "value": 0.3913923672129854,
+                "time": "2026-10-11T16:00:00Z"
+              },
+              {
+                "value": 0.39747197209633806,
+                "time": "2026-10-12T16:01:50Z"
+              }
+            ],
+            "btc": [
+              {
+                "value": 83783.28693461766,
+                "time": "2026-10-11T16:00:00Z"
+              },
+              {
+                "value": 82715.30780630757,
+                "time": "2026-10-12T16:01:10Z"
+              }
+            ]
+          }
+        },
+        "7d": {
+          "usd": 6.656092096193267,
+          "relativeBtc": 9.931335069952475,
+          "reason": null,
+          "endpoints": {
+            "asset": [
+              {
+                "value": 0.37266691877090113,
+                "time": "2026-10-05T16:00:00Z"
+              },
+              {
+                "value": 0.39747197209633806,
+                "time": "2026-10-12T16:01:50Z"
+              }
+            ],
+            "btc": [
+              {
+                "value": 85255.36646953519,
+                "time": "2026-10-05T16:00:00Z"
+              },
+              {
+                "value": 82715.30780630757,
+                "time": "2026-10-12T16:01:10Z"
+              }
+            ]
+          }
+        }
+      },
+      "orderbook": null,
+      "history": [
+        [
+          1791133200000,
+          0.407242149094419
+        ],
+        [
+          1791136800000,
+          0.39583298305563724
+        ],
+        [
+          1791140400000,
+          0.3949410602040529
+        ],
+        [
+          1791144000000,
+          0.39177666881560874
+        ],
+        [
+          1791147600000,
+          0.3892880975179429
+        ],
+        [
+          1791151200000,
+          0.38689904033678574
+        ],
+        [
+          1791154800000,
+          0.39049374513374047
+        ],
+        [
+          1791158400000,
+          0.3892384589262918
+        ],
+        [
+          1791162000000,
+          0.39388218593645385
+        ],
+        [
+          1791165600000,
+          0.3941294379479758
+        ],
+        [
+          1791169200000,
+          0.39805975241174857
+        ],
+        [
+          1791172800000,
+          0.3922472315758327
+        ],
+        [
+          1791176400000,
+          0.3949164601165442
+        ],
+        [
+          1791180000000,
+          0.39548952010443794
+        ],
+        [
+          1791183600000,
+          0.3933505611481477
+        ],
+        [
+          1791187200000,
+          0.39335215506523974
+        ],
+        [
+          1791190800000,
+          0.38521279140733933
+        ],
+        [
+          1791194400000,
+          0.3819755526224754
+        ],
+        [
+          1791198000000,
+          0.3822427497915346
+        ],
+        [
+          1791201600000,
+          0.37888593751147553
+        ],
+        [
+          1791205200000,
+          0.37711581301446456
+        ],
+        [
+          1791208800000,
+          0.3789597071581612
+        ],
+        [
+          1791212400000,
+          0.3739818778628869
+        ],
+        [
+          1791216000000,
+          0.37266691877090113
+        ],
+        [
+          1791219600000,
+          0.3852099081819585
+        ],
+        [
+          1791223200000,
+          0.380424666172427
+        ],
+        [
+          1791226800000,
+          0.3772412400779133
+        ],
+        [
+          1791230400000,
+          0.37616382161206247
+        ],
+        [
+          1791234000000,
+          0.37632036434087607
+        ],
+        [
+          1791237600000,
+          0.3772450623356584
+        ],
+        [
+          1791241200000,
+          0.3792975208203768
+        ],
+        [
+          1791244800000,
+          0.37942415769025906
+        ],
+        [
+          1791248400000,
+          0.37744009134754564
+        ],
+        [
+          1791252000000,
+          0.37662492283177623
+        ],
+        [
+          1791255600000,
+          0.3768685387002835
+        ],
+        [
+          1791259200000,
+          0.3806355087104471
+        ],
+        [
+          1791262800000,
+          0.3764228614834671
+        ],
+        [
+          1791266400000,
+          0.3743651080450789
+        ],
+        [
+          1791270000000,
+          0.37380719618347746
+        ],
+        [
+          1791273600000,
+          0.37572269842443107
+        ],
+        [
+          1791277200000,
+          0.37871560032484824
+        ],
+        [
+          1791280800000,
+          0.3824178170035829
+        ],
+        [
+          1791284400000,
+          0.37971116581802977
+        ],
+        [
+          1791288000000,
+          0.38070568139737127
+        ],
+        [
+          1791291600000,
+          0.37999397575712157
+        ],
+        [
+          1791295200000,
+          0.38056480532721
+        ],
+        [
+          1791298800000,
+          0.38093500465505514
+        ],
+        [
+          1791302400000,
+          0.3758435097621681
+        ],
+        [
+          1791306000000,
+          0.37537555850303006
+        ],
+        [
+          1791309600000,
+          0.37633988399320173
+        ],
+        [
+          1791313200000,
+          0.377923360182851
+        ],
+        [
+          1791316800000,
+          0.3814611296531698
+        ],
+        [
+          1791320400000,
+          0.37905635667606546
+        ],
+        [
+          1791324000000,
+          0.38064701659437733
+        ],
+        [
+          1791327600000,
+          0.3833646528135185
+        ],
+        [
+          1791331200000,
+          0.3844292939508024
+        ],
+        [
+          1791334800000,
+          0.3895033051426812
+        ],
+        [
+          1791338400000,
+          0.37897685323357483
+        ],
+        [
+          1791342000000,
+          0.37777562757089844
+        ],
+        [
+          1791345600000,
+          0.38991163811500656
+        ],
+        [
+          1791349200000,
+          0.3966540288911991
+        ],
+        [
+          1791352800000,
+          0.39853031604272166
+        ],
+        [
+          1791356400000,
+          0.4050075697880774
+        ],
+        [
+          1791360000000,
+          0.40121017882744503
+        ],
+        [
+          1791363600000,
+          0.39702957379796155
+        ],
+        [
+          1791367200000,
+          0.3987179866291499
+        ],
+        [
+          1791370800000,
+          0.39374837905653065
+        ],
+        [
+          1791374400000,
+          0.39559860282923603
+        ],
+        [
+          1791378000000,
+          0.397114061806485
+        ],
+        [
+          1791381600000,
+          0.373666912702914
+        ],
+        [
+          1791385200000,
+          0.36878897017492174
+        ],
+        [
+          1791388800000,
+          0.3745894271803416
+        ],
+        [
+          1791392400000,
+          0.3641290148934694
+        ],
+        [
+          1791396000000,
+          0.36480143159885203
+        ],
+        [
+          1791399600000,
+          0.36327664921316694
+        ],
+        [
+          1791403200000,
+          0.36433643015472117
+        ],
+        [
+          1791406800000,
+          0.36736134375540097
+        ],
+        [
+          1791410400000,
+          0.36607547353233505
+        ],
+        [
+          1791414000000,
+          0.3710331583931613
+        ],
+        [
+          1791417600000,
+          0.3706205566770803
+        ],
+        [
+          1791421200000,
+          0.3705279539817825
+        ],
+        [
+          1791424800000,
+          0.36591568696406923
+        ],
+        [
+          1791428400000,
+          0.36676624634165533
+        ],
+        [
+          1791432000000,
+          0.3641852871093319
+        ],
+        [
+          1791435600000,
+          0.36210887834809513
+        ],
+        [
+          1791439200000,
+          0.36310695721807495
+        ],
+        [
+          1791442800000,
+          0.3734286194591138
+        ],
+        [
+          1791446400000,
+          0.3726300233248705
+        ],
+        [
+          1791450000000,
+          0.37629893825405697
+        ],
+        [
+          1791453600000,
+          0.39166245579282655
+        ],
+        [
+          1791457200000,
+          0.3836690114724239
+        ],
+        [
+          1791460800000,
+          0.3808622315412104
+        ],
+        [
+          1791464400000,
+          0.37864312913821585
+        ],
+        [
+          1791468000000,
+          0.38117048077788873
+        ],
+        [
+          1791471600000,
+          0.37163221111293887
+        ],
+        [
+          1791475200000,
+          0.3604134739083053
+        ],
+        [
+          1791478800000,
+          0.3614786288803464
+        ],
+        [
+          1791482400000,
+          0.3599495594904758
+        ],
+        [
+          1791486000000,
+          0.3639022806118881
+        ],
+        [
+          1791489600000,
+          0.367641360049833
+        ],
+        [
+          1791493200000,
+          0.3787835476489773
+        ],
+        [
+          1791496800000,
+          0.37681770588884683
+        ],
+        [
+          1791500400000,
+          0.3820247907575104
+        ],
+        [
+          1791504000000,
+          0.3818023730520846
+        ],
+        [
+          1791507600000,
+          0.3881520877587911
+        ],
+        [
+          1791511200000,
+          0.39466313828314015
+        ],
+        [
+          1791514800000,
+          0.3981726703761395
+        ],
+        [
+          1791518400000,
+          0.39440859171024095
+        ],
+        [
+          1791522000000,
+          0.39243856138909516
+        ],
+        [
+          1791525600000,
+          0.38877656797444066
+        ],
+        [
+          1791529200000,
+          0.3873939521618171
+        ],
+        [
+          1791532800000,
+          0.3864939889919337
+        ],
+        [
+          1791536400000,
+          0.3929609301985007
+        ],
+        [
+          1791540000000,
+          0.3915957142094691
+        ],
+        [
+          1791543600000,
+          0.39118321269875067
+        ],
+        [
+          1791547200000,
+          0.3942736860657922
+        ],
+        [
+          1791550800000,
+          0.39211818008922344
+        ],
+        [
+          1791554400000,
+          0.38994111429204376
+        ],
+        [
+          1791558000000,
+          0.383848085212586
+        ],
+        [
+          1791561600000,
+          0.3835813207895658
+        ],
+        [
+          1791565200000,
+          0.3833941340095046
+        ],
+        [
+          1791568800000,
+          0.3817763419511133
+        ],
+        [
+          1791572400000,
+          0.377984917748722
+        ],
+        [
+          1791576000000,
+          0.37409564690948
+        ],
+        [
+          1791579600000,
+          0.3781530978406499
+        ],
+        [
+          1791583200000,
+          0.38403667139926
+        ],
+        [
+          1791586800000,
+          0.3897800679748253
+        ],
+        [
+          1791590400000,
+          0.3950957167475601
+        ],
+        [
+          1791594000000,
+          0.39136001901253087
+        ],
+        [
+          1791597600000,
+          0.394138244848288
+        ],
+        [
+          1791601200000,
+          0.393702189305352
+        ],
+        [
+          1791604800000,
+          0.39147156126645294
+        ],
+        [
+          1791608400000,
+          0.3952950241159936
+        ],
+        [
+          1791612000000,
+          0.3979649055865325
+        ],
+        [
+          1791615600000,
+          0.3929993895183604
+        ],
+        [
+          1791619200000,
+          0.3941972983236622
+        ],
+        [
+          1791622800000,
+          0.3911424954686492
+        ],
+        [
+          1791626400000,
+          0.38982750138957256
+        ],
+        [
+          1791630000000,
+          0.3983043229452766
+        ],
+        [
+          1791633600000,
+          0.3987953549629631
+        ],
+        [
+          1791637200000,
+          0.4011518097193903
+        ],
+        [
+          1791640800000,
+          0.4031988800775114
+        ],
+        [
+          1791644400000,
+          0.4071855746934763
+        ],
+        [
+          1791648000000,
+          0.407543287524783
+        ],
+        [
+          1791651600000,
+          0.4107959360283366
+        ],
+        [
+          1791655200000,
+          0.39449907800740924
+        ],
+        [
+          1791658800000,
+          0.39884406960938956
+        ],
+        [
+          1791662400000,
+          0.40615255617135376
+        ],
+        [
+          1791666000000,
+          0.4067800638815156
+        ],
+        [
+          1791669600000,
+          0.40022830287808825
+        ],
+        [
+          1791673200000,
+          0.40063941760258975
+        ],
+        [
+          1791676800000,
+          0.40121656844675657
+        ],
+        [
+          1791680400000,
+          0.3984037250541888
+        ],
+        [
+          1791684000000,
+          0.39813060274501705
+        ],
+        [
+          1791687600000,
+          0.4027750109491669
+        ],
+        [
+          1791691200000,
+          0.3985531727792715
+        ],
+        [
+          1791694800000,
+          0.3997761684765078
+        ],
+        [
+          1791698400000,
+          0.3983879039756128
+        ],
+        [
+          1791702000000,
+          0.39645441003975357
+        ],
+        [
+          1791705600000,
+          0.39479710669867146
+        ],
+        [
+          1791709200000,
+          0.3969187703048069
+        ],
+        [
+          1791712800000,
+          0.3934131058845207
+        ],
+        [
+          1791716400000,
+          0.3918214609945829
+        ],
+        [
+          1791720000000,
+          0.3903543832631579
+        ],
+        [
+          1791723600000,
+          0.3873129782793942
+        ],
+        [
+          1791727200000,
+          0.3861056374471609
+        ],
+        [
+          1791730800000,
+          0.3869957232596662
+        ],
+        [
+          1791734400000,
+          0.3913923672129854
+        ],
+        [
+          1791738000000,
+          0.39564758944038764
+        ],
+        [
+          1791741600000,
+          0.40074602797478887
+        ],
+        [
+          1791745200000,
+          0.3982923284341321
+        ],
+        [
+          1791748800000,
+          0.39778797584934106
+        ],
+        [
+          1791752400000,
+          0.39806558241369044
+        ],
+        [
+          1791756000000,
+          0.3931241978376093
+        ],
+        [
+          1791759600000,
+          0.39473584047822474
+        ],
+        [
+          1791763200000,
+          0.3987760034647303
+        ],
+        [
+          1791766800000,
+          0.3939300246310739
+        ],
+        [
+          1791770400000,
+          0.38871170646256276
+        ],
+        [
+          1791774000000,
+          0.3915209594858739
+        ],
+        [
+          1791777600000,
+          0.3871476737745434
+        ],
+        [
+          1791781200000,
+          0.3890505472765824
+        ],
+        [
+          1791784800000,
+          0.38807027881347766
+        ],
+        [
+          1791788400000,
+          0.3866518233613068
+        ],
+        [
+          1791792000000,
+          0.38577685827907227
+        ],
+        [
+          1791795600000,
+          0.3840846410238094
+        ],
+        [
+          1791799200000,
+          0.38738950824702933
+        ],
+        [
+          1791802800000,
+          0.38742833072096167
+        ],
+        [
+          1791806400000,
+          0.38792341954471543
+        ],
+        [
+          1791810000000,
+          0.38481210682534284
+        ],
+        [
+          1791813600000,
+          0.3821582696867416
+        ],
+        [
+          1791817200000,
+          0.39443781887232726
+        ],
+        [
+          1791820910000,
+          0.39747197209633806
+        ]
+      ],
+      "reason": "报价缺失或晚于报告截止",
+      "marketScope": "聚合现货；交易所充提网络未逐一核对，不代表原生链成交量"
+    }
+  ],
   "metrics": [],
   "sources": [
     {
@@ -294,9 +2334,11 @@
       "kind": "feed",
       "name": "RGB Protocol RSS",
       "url": "https://rgb.info/feed/",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:02:56Z",
+      "status": "ok",
+      "error": null,
+      "count": 2,
+      "completedAt": "2026-10-12T16:02:57Z",
       "consecutiveFailures": 0
     },
     {
@@ -316,9 +2358,11 @@
       "kind": "releases",
       "name": "lightninglabs/taproot-assets releases",
       "url": "https://github.com/lightninglabs/taproot-assets/releases",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:02:57Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:02:58Z",
       "consecutiveFailures": 0
     },
     {
@@ -327,9 +2371,11 @@
       "kind": "feedback",
       "name": "lightninglabs/taproot-assets issues",
       "url": "https://github.com/lightninglabs/taproot-assets/issues",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:02:58Z",
+      "status": "ok",
+      "error": null,
+      "count": 25,
+      "completedAt": "2026-10-12T16:02:59Z",
       "consecutiveFailures": 0
     },
     {
@@ -338,10 +2384,10 @@
       "kind": "releases",
       "name": "lightningnetwork/lnd releases",
       "url": "https://github.com/lightningnetwork/lnd/releases",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
-      "consecutiveFailures": 0
+      "checkedAt": "2026-10-12T16:02:59Z",
+      "status": "error",
+      "error": "Response exceeds 5 MB",
+      "consecutiveFailures": 1
     },
     {
       "id": "700f69c8bede789a0b17",
@@ -349,9 +2395,11 @@
       "kind": "feedback",
       "name": "lightningnetwork/lnd issues",
       "url": "https://github.com/lightningnetwork/lnd/issues",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:02Z",
+      "status": "ok",
+      "error": null,
+      "count": 11,
+      "completedAt": "2026-10-12T16:03:04Z",
       "consecutiveFailures": 0
     },
     {
@@ -360,9 +2408,11 @@
       "kind": "releases",
       "name": "unisat-wallet/extension releases",
       "url": "https://github.com/unisat-wallet/extension/releases",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:04Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:05Z",
       "consecutiveFailures": 0
     },
     {
@@ -371,9 +2421,11 @@
       "kind": "feedback",
       "name": "unisat-wallet/extension issues",
       "url": "https://github.com/unisat-wallet/extension/issues",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:05Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:05Z",
       "consecutiveFailures": 0
     },
     {
@@ -404,9 +2456,11 @@
       "kind": "releases",
       "name": "atomicals/atomicals-electrumx releases",
       "url": "https://github.com/atomicals/atomicals-electrumx/releases",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:05Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:06Z",
       "consecutiveFailures": 0
     },
     {
@@ -415,9 +2469,11 @@
       "kind": "feedback",
       "name": "atomicals/atomicals-electrumx issues",
       "url": "https://github.com/atomicals/atomicals-electrumx/issues",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:06Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:06Z",
       "consecutiveFailures": 0
     },
     {
@@ -426,9 +2482,11 @@
       "kind": "releases",
       "name": "CATProtocol/cat-token-box releases",
       "url": "https://github.com/CATProtocol/cat-token-box/releases",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:06Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:07Z",
       "consecutiveFailures": 0
     },
     {
@@ -437,9 +2495,11 @@
       "kind": "feedback",
       "name": "CATProtocol/cat-token-box issues",
       "url": "https://github.com/CATProtocol/cat-token-box/issues",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:07Z",
+      "status": "ok",
+      "error": null,
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:07Z",
       "consecutiveFailures": 0
     },
     {
@@ -448,9 +2508,11 @@
       "kind": "releases",
       "name": "stacks-network/stacks-core releases",
       "url": "https://github.com/stacks-network/stacks-core/releases",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:07Z",
+      "status": "partial",
+      "error": "分页/订阅源长度不足以证明完整窗口覆盖",
+      "count": 0,
+      "completedAt": "2026-10-12T16:03:08Z",
       "consecutiveFailures": 0
     },
     {
@@ -459,9 +2521,11 @@
       "kind": "feedback",
       "name": "stacks-network/stacks-core issues",
       "url": "https://github.com/stacks-network/stacks-core/issues",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未运行在线采集；此空状态不是无事件",
+      "checkedAt": "2026-10-12T16:03:08Z",
+      "status": "ok",
+      "error": null,
+      "count": 7,
+      "completedAt": "2026-10-12T16:03:09Z",
       "consecutiveFailures": 0
     },
     {
@@ -470,18 +2534,18 @@
       "kind": "market",
       "name": "STX 行情",
       "url": "https://www.coingecko.com/en/coins/blockstack",
-      "checkedAt": null,
-      "status": "not_checked",
-      "error": "尚未采集",
+      "checkedAt": "2026-10-12T16:03:09Z",
+      "status": "partial",
+      "error": "报价缺失或晚于报告截止",
       "consecutiveFailures": 0
     }
   ],
   "corrections": [],
   "coverage": {
     "totalProjects": 9,
-    "checkedProjects": 0,
-    "successfulSources": 0,
-    "failedSources": 0,
+    "checkedProjects": 6,
+    "successfulSources": 11,
+    "failedSources": 1,
     "completeProjects": null,
     "note": "成功核查来源数量不代表完整项目覆盖；未配置平台与私有数据不在覆盖范围。"
   },
@@ -514,6 +2578,46 @@
       "reason": "未配置可自动采集源；需人工核查公告与反馈",
       "url": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
       "at": null,
+      "state": "待核查"
+    },
+    {
+      "id": "51034a2e7847c66cbb40",
+      "level": "P2",
+      "projectId": "lightning-labs",
+      "title": "来源覆盖不完整",
+      "reason": "Response exceeds 5 MB",
+      "url": "https://github.com/lightningnetwork/lnd/releases",
+      "at": "2026-10-12T16:02:59Z",
+      "state": "待核查"
+    },
+    {
+      "id": "18a316d8c28c7f4da3ed",
+      "level": "P2",
+      "projectId": "stacks",
+      "title": "STX 报价时间缺失或过期",
+      "reason": "不能确认当前价格及阈值",
+      "url": "https://www.coingecko.com/en/coins/blockstack",
+      "at": "2026-10-12T16:02:57.000Z",
+      "state": "待核查"
+    },
+    {
+      "id": "d77f8f4ac95c9caf7625",
+      "level": "P2",
+      "projectId": "stacks",
+      "title": "来源覆盖不完整",
+      "reason": "分页/订阅源长度不足以证明完整窗口覆盖",
+      "url": "https://github.com/stacks-network/stacks-core/releases",
+      "at": "2026-10-12T16:03:07Z",
+      "state": "待核查"
+    },
+    {
+      "id": "d77f8f4ac95c9caf7625",
+      "level": "P2",
+      "projectId": "stacks",
+      "title": "来源覆盖不完整",
+      "reason": "报价缺失或晚于报告截止",
+      "url": "https://www.coingecko.com/en/coins/blockstack",
+      "at": "2026-10-12T16:03:09Z",
       "state": "待核查"
     }
   ]
