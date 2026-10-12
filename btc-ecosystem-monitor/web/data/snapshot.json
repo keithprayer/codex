@@ -1,0 +1,520 @@
+{
+  "schemaVersion": 1,
+  "mode": "uncollected",
+  "generatedAt": "2026-10-12T09:06:00Z",
+  "window": {
+    "cutoff": "2026-10-12T09:06:00Z",
+    "start24h": "2026-10-11T09:06:00Z",
+    "start7d": "2026-10-05T09:06:00Z",
+    "end7d": "2026-10-19T09:06:00Z"
+  },
+  "settings": {
+    "tradeSizeUsd": 1000,
+    "staleMinutes": 30,
+    "priceChangePct": 20,
+    "volumeMultiple": 3,
+    "depthDropPct": 50,
+    "feedbackSamples": 5,
+    "unlockPct": 5,
+    "depegPct": 2,
+    "historyToleranceSeconds": 900,
+    "crossAssetSkewSeconds": 60
+  },
+  "projects": [
+    {
+      "id": "rgb",
+      "name": "RGB Protocol",
+      "ecosystems": [
+        "RGB"
+      ],
+      "network": "Bitcoin",
+      "protocol": "RGB client-side validation",
+      "officialUrl": "https://rgb.info/",
+      "identityStatus": "protocol_only",
+      "repos": [],
+      "feeds": [
+        "https://rgb.info/feed/"
+      ],
+      "assets": [],
+      "metrics": [
+        "客户端与钱包版本",
+        "公开发行记录",
+        "验证与恢复能力"
+      ],
+      "visibility": "客户端验证的私有状态不可全网枚举；公开索引不等于全网。"
+    },
+    {
+      "id": "bitlight",
+      "name": "Bitlight Labs",
+      "ecosystems": [
+        "RGB",
+        "Lightning"
+      ],
+      "network": "Bitcoin products / BNB Smart Chain token",
+      "protocol": "RGB / Lightning",
+      "officialUrl": "https://bitlightlabs.com/",
+      "identityStatus": "review_required",
+      "repos": [],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "light-bsc",
+          "symbol": "LIGHT",
+          "network": "BNB Smart Chain",
+          "standard": "BEP-20",
+          "uniqueId": "0x477C2c0459004E3354Ba427FA285D7C053203c0E",
+          "identityStatus": "reference_only",
+          "identitySource": "https://www.bitget.com/news/detail/12560604990293",
+          "coinGeckoId": "bitlight",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": [
+        "RGB 钱包与通道恢复",
+        "LSP 可用性"
+      ],
+      "visibility": "项目的 BTC 生态标签与代币发行网络分别记录；启用行情前重新确认合约。"
+    },
+    {
+      "id": "lightning-labs",
+      "name": "Lightning Labs",
+      "ecosystems": [
+        "Taproot Assets",
+        "Lightning"
+      ],
+      "network": "Bitcoin",
+      "protocol": "Taproot Assets / Lightning Network",
+      "officialUrl": "https://lightning.engineering/",
+      "identityStatus": "protocol_only",
+      "repos": [
+        "lightninglabs/taproot-assets",
+        "lightningnetwork/lnd"
+      ],
+      "feeds": [],
+      "assets": [],
+      "metrics": [
+        "tapd / LND 版本",
+        "证明格式激活",
+        "公开节点与通道",
+        "Universe 发行记录"
+      ],
+      "visibility": "私有通道、支付成功率和私有 Universe 不属于公开全网数据。"
+    },
+    {
+      "id": "unisat",
+      "name": "UniSat · ORDI 观察组",
+      "ecosystems": [
+        "BRC20"
+      ],
+      "network": "Bitcoin mainnet",
+      "protocol": "BRC-20",
+      "officialUrl": "https://unisat.io/",
+      "identityStatus": "review_required",
+      "repos": [
+        "unisat-wallet/extension"
+      ],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "ordi-btc",
+          "symbol": "ORDI",
+          "network": "Bitcoin mainnet",
+          "standard": "BRC-20",
+          "uniqueId": "b61b0172d95e266c18aea0c624db987e971a5d6d4ebc2aaed85da4642d635735i0",
+          "identityStatus": "reference_only",
+          "identitySource": "https://ordiscan.com/inscription/348020",
+          "coinGeckoId": "ordi",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": [
+        "钱包与索引器版本",
+        "部署 / 铸造 / 转账",
+        "索引器一致性"
+      ],
+      "visibility": "ORDI 是独立观察资产，不是 UniSat 项目代币；聚合报价可能包含跨链表示。"
+    },
+    {
+      "id": "crc-garden",
+      "name": "CRC Garden",
+      "ecosystems": [
+        "CRC20"
+      ],
+      "network": "Bitcoin L1（项目方声明，待核实）",
+      "protocol": "CRC-20（协议全名待核实）",
+      "officialUrl": "https://crc.garden/",
+      "identityStatus": "unverified",
+      "repos": [],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "leaf-unverified",
+          "symbol": "LEAF",
+          "network": "待核实",
+          "standard": "CRC-20 待核实",
+          "uniqueId": null,
+          "identityStatus": "unverified",
+          "marketEnabled": false
+        },
+        {
+          "id": "axbt-unverified",
+          "symbol": "AXBT",
+          "network": "待核实",
+          "standard": "CRC-20 待核实",
+          "uniqueId": null,
+          "identityStatus": "unverified",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": [
+        "协议全名与创世资产核验",
+        "抵押 / 负债 / 赎回"
+      ],
+      "visibility": "CRC20 名称有歧义。全名、网络、唯一资产标识全部通过后才能启用报价；不假设 AXBT 锚定美元。"
+    },
+    {
+      "id": "dog",
+      "name": "DOG · Runes",
+      "ecosystems": [
+        "Runes"
+      ],
+      "network": "Bitcoin mainnet",
+      "protocol": "Runes",
+      "officialUrl": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
+      "identityStatus": "review_required",
+      "repos": [],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "dog-rune",
+          "symbol": "DOG",
+          "network": "Bitcoin mainnet",
+          "standard": "Runes",
+          "uniqueId": "840000:3",
+          "identityStatus": "reference_only",
+          "identitySource": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
+          "coinGeckoId": "dog-go-to-the-moon-rune",
+          "marketEnabled": false
+        }
+      ],
+      "metrics": [
+        "Rune ID 与发行属性",
+        "活跃转账与持有人",
+        "市场流动性"
+      ],
+      "visibility": "当前入口是区块浏览器，不视为发行方官方公告源。"
+    },
+    {
+      "id": "atomicals",
+      "name": "Atomicals",
+      "ecosystems": [
+        "ARC20"
+      ],
+      "network": "Bitcoin mainnet",
+      "protocol": "Atomicals / ARC-20",
+      "officialUrl": "https://github.com/atomicals/atomicals-electrumx",
+      "identityStatus": "protocol_only",
+      "repos": [
+        "atomicals/atomicals-electrumx"
+      ],
+      "feeds": [],
+      "assets": [],
+      "metrics": [
+        "节点与索引器版本",
+        "Atomical ID",
+        "铸造与转账"
+      ],
+      "visibility": "尚未选择具体 ARC-20 资产，避免误用 Cosmos ATOM 行情。"
+    },
+    {
+      "id": "cat",
+      "name": "CAT Protocol",
+      "ecosystems": [
+        "CAT20"
+      ],
+      "network": "Fractal Bitcoin",
+      "protocol": "Covenant Attested Token / CAT20",
+      "officialUrl": "https://catprotocol.org/",
+      "identityStatus": "protocol_only",
+      "repos": [
+        "CATProtocol/cat-token-box"
+      ],
+      "feeds": [],
+      "assets": [],
+      "metrics": [
+        "OP_CAT 部署网络",
+        "合约与 SDK 版本",
+        "发行与索引器"
+      ],
+      "visibility": "部署网络与具体 token ID 分别核验，不把 Fractal 自动归为 Bitcoin 主网。"
+    },
+    {
+      "id": "stacks",
+      "name": "Stacks",
+      "ecosystems": [
+        "Bitcoin L2"
+      ],
+      "network": "Stacks mainnet",
+      "protocol": "Stacks / Proof of Transfer",
+      "officialUrl": "https://www.stacks.co/",
+      "identityStatus": "verified",
+      "repos": [
+        "stacks-network/stacks-core"
+      ],
+      "feeds": [],
+      "assets": [
+        {
+          "id": "stx-native",
+          "symbol": "STX",
+          "network": "Stacks mainnet",
+          "standard": "native",
+          "uniqueId": "stacks-mainnet:native:STX",
+          "identityStatus": "verified",
+          "identitySource": "https://docs.stacks.co/",
+          "coinGeckoId": "blockstack",
+          "marketEnabled": true
+        }
+      ],
+      "metrics": [
+        "协议升级与 PoX",
+        "sBTC 供应及赎回",
+        "活跃地址与合约使用"
+      ],
+      "visibility": "官方文章的计划与链上实际执行分开记录；sBTC / stBTC 须另外添加资产。"
+    }
+  ],
+  "events": [],
+  "feedbackGroups": [],
+  "markets": [],
+  "metrics": [],
+  "sources": [
+    {
+      "id": "dccd6e03670acf5635ec",
+      "projectId": "rgb",
+      "kind": "feed",
+      "name": "RGB Protocol RSS",
+      "url": "https://rgb.info/feed/",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "bitlight-manual",
+      "projectId": "bitlight",
+      "name": "Bitlight Labs 官方网站",
+      "kind": "manual",
+      "url": "https://bitlightlabs.com/",
+      "checkedAt": null,
+      "status": "not_configured",
+      "error": "未配置可自动采集源；需人工核查公告与反馈",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "39a9afbe8bf457301b43",
+      "projectId": "lightning-labs",
+      "kind": "releases",
+      "name": "lightninglabs/taproot-assets releases",
+      "url": "https://github.com/lightninglabs/taproot-assets/releases",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "0326cdbd24e324691409",
+      "projectId": "lightning-labs",
+      "kind": "feedback",
+      "name": "lightninglabs/taproot-assets issues",
+      "url": "https://github.com/lightninglabs/taproot-assets/issues",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "e195e05084a485ba65a6",
+      "projectId": "lightning-labs",
+      "kind": "releases",
+      "name": "lightningnetwork/lnd releases",
+      "url": "https://github.com/lightningnetwork/lnd/releases",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "700f69c8bede789a0b17",
+      "projectId": "lightning-labs",
+      "kind": "feedback",
+      "name": "lightningnetwork/lnd issues",
+      "url": "https://github.com/lightningnetwork/lnd/issues",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "c438ae79c619ee9dcd6a",
+      "projectId": "unisat",
+      "kind": "releases",
+      "name": "unisat-wallet/extension releases",
+      "url": "https://github.com/unisat-wallet/extension/releases",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "dc9d813e0132a91f73d3",
+      "projectId": "unisat",
+      "kind": "feedback",
+      "name": "unisat-wallet/extension issues",
+      "url": "https://github.com/unisat-wallet/extension/issues",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "crc-garden-manual",
+      "projectId": "crc-garden",
+      "name": "CRC Garden 官方网站",
+      "kind": "manual",
+      "url": "https://crc.garden/",
+      "checkedAt": null,
+      "status": "not_configured",
+      "error": "未配置可自动采集源；需人工核查公告与反馈",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "dog-manual",
+      "projectId": "dog",
+      "name": "DOG · Runes 官方网站",
+      "kind": "manual",
+      "url": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
+      "checkedAt": null,
+      "status": "not_configured",
+      "error": "未配置可自动采集源；需人工核查公告与反馈",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "66b5e98183d49781a840",
+      "projectId": "atomicals",
+      "kind": "releases",
+      "name": "atomicals/atomicals-electrumx releases",
+      "url": "https://github.com/atomicals/atomicals-electrumx/releases",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "f2ad7a246ef75127fa18",
+      "projectId": "atomicals",
+      "kind": "feedback",
+      "name": "atomicals/atomicals-electrumx issues",
+      "url": "https://github.com/atomicals/atomicals-electrumx/issues",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "4a1698cf27aa1f9fa9ce",
+      "projectId": "cat",
+      "kind": "releases",
+      "name": "CATProtocol/cat-token-box releases",
+      "url": "https://github.com/CATProtocol/cat-token-box/releases",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "cbe40c77f629acac354d",
+      "projectId": "cat",
+      "kind": "feedback",
+      "name": "CATProtocol/cat-token-box issues",
+      "url": "https://github.com/CATProtocol/cat-token-box/issues",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "d508af2873327123a307",
+      "projectId": "stacks",
+      "kind": "releases",
+      "name": "stacks-network/stacks-core releases",
+      "url": "https://github.com/stacks-network/stacks-core/releases",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "4ca6df92461407584c3d",
+      "projectId": "stacks",
+      "kind": "feedback",
+      "name": "stacks-network/stacks-core issues",
+      "url": "https://github.com/stacks-network/stacks-core/issues",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未运行在线采集；此空状态不是无事件",
+      "consecutiveFailures": 0
+    },
+    {
+      "id": "market-stx-native",
+      "projectId": "stacks",
+      "kind": "market",
+      "name": "STX 行情",
+      "url": "https://www.coingecko.com/en/coins/blockstack",
+      "checkedAt": null,
+      "status": "not_checked",
+      "error": "尚未采集",
+      "consecutiveFailures": 0
+    }
+  ],
+  "corrections": [],
+  "coverage": {
+    "totalProjects": 9,
+    "checkedProjects": 0,
+    "successfulSources": 0,
+    "failedSources": 0,
+    "completeProjects": null,
+    "note": "成功核查来源数量不代表完整项目覆盖；未配置平台与私有数据不在覆盖范围。"
+  },
+  "alerts": [
+    {
+      "id": "ca7d84c19e73b0a46ed8",
+      "level": "P2",
+      "projectId": "bitlight",
+      "title": "来源覆盖不完整",
+      "reason": "未配置可自动采集源；需人工核查公告与反馈",
+      "url": "https://bitlightlabs.com/",
+      "at": null,
+      "state": "待核查"
+    },
+    {
+      "id": "4da0416034a70560491f",
+      "level": "P2",
+      "projectId": "crc-garden",
+      "title": "来源覆盖不完整",
+      "reason": "未配置可自动采集源；需人工核查公告与反馈",
+      "url": "https://crc.garden/",
+      "at": null,
+      "state": "待核查"
+    },
+    {
+      "id": "d4e2ea2f23c6dd89ed4a",
+      "level": "P2",
+      "projectId": "dog",
+      "title": "来源覆盖不完整",
+      "reason": "未配置可自动采集源；需人工核查公告与反馈",
+      "url": "https://ordiscan.com/rune/DOGGOTOTHEMOON",
+      "at": null,
+      "state": "待核查"
+    }
+  ]
+}

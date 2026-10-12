@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta
+      name="description"
+      content="BTC 生态项目监控：可追溯的公告、反馈、行情与每日简报。"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <title>BTC Observatory · 生态监控</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">跳到主要内容</a>
+    <aside class="sidebar">
+      <a class="brand" href="#overview"
+        ><span class="brand-icon">₿</span
+        ><span>BTC Observatory<small>比特币生态观察站</small></span></a
+      >
+      <p class="nav-label">WORKSPACE / 监控工作台</p>
+      <nav aria-label="主导航">
+        <a href="#overview" data-nav="overview"><span>◈</span>监控总览</a>
+        <a href="#projects" data-nav="projects"><span>▦</span>项目与资产</a>
+        <a href="#news" data-nav="news"
+          ><span>≋</span>公告与进展 <b id="nav-news">0</b></a
+        >
+        <a href="#feedback" data-nav="feedback"><span>◌</span>用户反馈</a>
+        <a href="#markets" data-nav="markets"><span>↗</span>行情与流动性</a>
+        <a href="#reports" data-nav="reports"><span>▤</span>每日简报</a>
+        <a href="#settings" data-nav="settings"><span>⚙</span>来源与设置</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <span class="tiny-dot"></span>证据优先 · UTC 时间
+        <p>每一条信号，都有来源。<br />缺失数据，不作无事件处理。</p>
+        <a
+          href="https://github.com/keithprayer/codex"
+          target="_blank"
+          rel="noopener noreferrer"
+          >查看 GitHub 项目 ↗</a
+        >
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <div class="breadcrumb">
+          WORKSPACE <span>/</span> <strong id="breadcrumb">监控总览</strong>
+        </div>
+        <div class="top-actions">
+          <span class="utc">UTC</span
+          ><button id="refresh" class="button subtle" type="button">
+            ↻ 重新读取快照
+          </button>
+        </div>
+      </header>
+      <main id="main" tabindex="-1">
+        <div class="loading" role="status">正在读取监控快照…</div>
+      </main>
+      <footer>
+        BTC OBSERVATORY <span>公开来源 · 明确窗口 · 可追溯记录</span>
+      </footer>
+    </div>
+    <dialog id="detail-dialog">
+      <button
+        class="dialog-close button subtle"
+        type="button"
+        aria-label="关闭"
+      >
+        ✕
+      </button>
+      <div id="detail-content"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <noscript
+      >此监控看板需要 JavaScript。你也可以直接打开
+      <a href="./data/daily.md">Markdown 每日简报</a>。</noscript
+    >
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

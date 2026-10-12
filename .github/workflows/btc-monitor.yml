@@ -1,0 +1,100 @@
+name: BTC Monitor
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Deploy the dashboard to GitHub Pages after collecting'
+        type: boolean
+        default: true
+  schedule:
+    - cron: '17 0 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: btc-monitor-data
+  cancel-in-progress: false
+jobs:
+  monitor:
+    if: github.event_name == 'workflow_dispatch' || vars.BTC_MONITOR_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pages: read
+    outputs:
+      publish: ${{ steps.mode.outputs.publish }}
+    defaults:
+      run:
+        working-directory: btc-ecosystem-monitor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Decide whether to deploy
+        id: mode
+        env:
+          PUBLISH_REQUESTED: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'schedule' && vars.BTC_PAGES_ENABLED == 'true') }}
+        run: echo "publish=$PUBLISH_REQUESTED" >> "$GITHUB_OUTPUT"
+      - run: npm run check
+      - run: npm test
+      - name: Collect public evidence
+        id: collect
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: python -m monitor.collect
+      - name: Display daily brief in Actions Summary
+        if: always()
+        env:
+          COLLECT_OUTCOME: ${{ steps.collect.outcome }}
+        run: python scripts/action_summary.py
+      - name: Build interactive dashboard
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: btc-evidence
+          path: btc-ecosystem-monitor/web/data
+          retention-days: 90
+      - uses: actions/upload-artifact@v4
+        with:
+          name: btc-dashboard
+          path: btc-ecosystem-monitor/dist
+          retention-days: 30
+      - name: Store snapshots and correction history
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/data
+          if ! git diff --cached --quiet; then
+            git commit -m 'data: refresh BTC monitoring evidence and daily brief'
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+        if: steps.mode.outputs.publish == 'true'
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.mode.outputs.publish == 'true'
+        with:
+          path: btc-ecosystem-monitor/dist
+  deploy:
+    if: needs.monitor.outputs.publish == 'true'
+    needs: monitor
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish dashboard
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Display dashboard link
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: printf '## BTC 看板已部署\n\n[%s](%s)\n' "$PAGE_URL" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
